@@ -13,14 +13,30 @@ function erzeugeStandardDecks() {
       id: 1,
       titel: "Hauptstädte",
       karten: [
-        { id: 1, frage: "Was ist die Hauptstadt von Frankreich?", antwort: "Paris", gekonnt: false },
-        { id: 2, frage: "Was ist die Hauptstadt von Italien?", antwort: "Rom", gekonnt: false },
-        { id: 3, frage: "Was ist die Hauptstadt von Spanien?", antwort: "Madrid", gekonnt: false },
-        { id: 4, frage: "Was ist die Hauptstadt von Portugal?", antwort: "Lissabon", gekonnt: false },
-        { id: 5, frage: "Was ist die Hauptstadt von Griechenland?", antwort: "Athen", gekonnt: false }
+        { id: 1, frage: "Was ist die Hauptstadt von Frankreich?", antwort: "Paris", gekonnt: false, falschAnzahl: 0, richtigAnzahl: 0, istFehlerkarte: false, zuletztGelernt: null },
+        { id: 2, frage: "Was ist die Hauptstadt von Italien?", antwort: "Rom", gekonnt: false, falschAnzahl: 0, richtigAnzahl: 0, istFehlerkarte: false, zuletztGelernt: null },
+        { id: 3, frage: "Was ist die Hauptstadt von Spanien?", antwort: "Madrid", gekonnt: false, falschAnzahl: 0, richtigAnzahl: 0, istFehlerkarte: false, zuletztGelernt: null },
+        { id: 4, frage: "Was ist die Hauptstadt von Portugal?", antwort: "Lissabon", gekonnt: false, falschAnzahl: 0, richtigAnzahl: 0, istFehlerkarte: false, zuletztGelernt: null },
+        { id: 5, frage: "Was ist die Hauptstadt von Griechenland?", antwort: "Athen", gekonnt: false, falschAnzahl: 0, richtigAnzahl: 0, istFehlerkarte: false, zuletztGelernt: null }
       ]
     }
   ];
+}
+
+// Stellt sicher, dass jede Karte alle Lernfelder besitzt, auch wenn sie
+// aus einer älteren Version gespeichert wurde, die diese Felder noch nicht kannte.
+// Für "istFehlerkarte" übernehmen wir dabei sinnvoll den bisherigen Fehlerstand
+// (schon mal falsch beantwortete Karten gelten direkt als Fehlerkarte).
+function ergaenzeLernfelder(decks) {
+  decks.forEach((deck) => {
+    deck.karten.forEach((karte) => {
+      if (typeof karte.falschAnzahl !== "number") karte.falschAnzahl = 0;
+      if (typeof karte.richtigAnzahl !== "number") karte.richtigAnzahl = 0;
+      if (typeof karte.istFehlerkarte !== "boolean") karte.istFehlerkarte = karte.falschAnzahl >= 1;
+      if (typeof karte.zuletztGelernt === "undefined") karte.zuletztGelernt = null;
+    });
+  });
+  return decks;
 }
 
 // Lädt die Decks aus dem Local Storage. Falls es noch die alte, einfache
@@ -29,12 +45,19 @@ function erzeugeStandardDecks() {
 function ladeDecks() {
   const gespeichert = localStorage.getItem(SPEICHER_SCHLUESSEL);
   if (gespeichert) {
-    return JSON.parse(gespeichert);
+    return ergaenzeLernfelder(JSON.parse(gespeichert));
   }
 
   const altesDeck = localStorage.getItem(ALTER_SPEICHER_SCHLUESSEL);
   if (altesDeck) {
-    const karten = JSON.parse(altesDeck).map((k) => ({ ...k, gekonnt: false }));
+    const karten = JSON.parse(altesDeck).map((k) => ({
+      ...k,
+      gekonnt: false,
+      falschAnzahl: 0,
+      richtigAnzahl: 0,
+      istFehlerkarte: false,
+      zuletztGelernt: null
+    }));
     localStorage.removeItem(ALTER_SPEICHER_SCHLUESSEL);
     return [{ id: 1, titel: "Hauptstädte", karten }];
   }
@@ -50,6 +73,11 @@ function speichereDecks() {
 let decks = ladeDecks();
 let aktuellesDeckId = null; // welches Deck ist gerade im Lernmodus geöffnet
 let queue = [];              // Warteschlange (noch nicht "gekonnte" Karten) für den aktuellen Durchlauf
+
+let aktuellerLernModus = "normal"; // "normal" = alle Karten, "fehlerkarten" = nur aktuelle Fehlerkarten
+let sessionRichtigKlicks = 0; // Zählt "Gewusst"-Klicks im aktuellen Durchlauf (für die Statistik am Ende)
+let sessionFalschKlicks = 0;  // Zählt "Nicht gewusst"-Klicks im aktuellen Durchlauf
+let sessionFehlerkartenGesamt = 0; // Wie viele Fehlerkarten es beim Start dieses Fehlerkarten-Durchlaufs waren
 
 function aktuellesDeck() {
   return decks.find((d) => d.id === aktuellesDeckId);
@@ -76,6 +104,7 @@ const antwortText = document.getElementById("antwort-text");
 const btnGewusst = document.getElementById("btn-gewusst");
 const btnNichtGewusst = document.getElementById("btn-nicht-gewusst");
 const btnNeustart = document.getElementById("btn-neustart");
+const modusHinweis = document.getElementById("modus-hinweis");
 
 const progressText = document.getElementById("progress-text");
 const progressDetails = document.getElementById("progress-details");
@@ -85,6 +114,8 @@ const lernBereich = document.querySelector(".card");
 const hinweis = document.querySelector(".hint");
 const buttonsBereich = document.querySelector(".buttons");
 const fertigNachricht = document.getElementById("fertig-nachricht");
+const fertigTitel = document.getElementById("fertig-titel");
+const fertigStatistik = document.getElementById("fertig-statistik");
 const keineKartenNachricht = document.getElementById("keine-karten-nachricht");
 
 const btnToggleVerwaltung = document.getElementById("btn-toggle-verwaltung");
@@ -117,6 +148,7 @@ function renderDashboard() {
   decks.forEach((deck, index) => {
     const gesamt = deck.karten.length;
     const gekonnt = deck.karten.filter((k) => k.gekonnt).length;
+    const fehlerkartenAnzahl = deck.karten.filter((k) => k.istFehlerkarte).length;
     const optik = DECK_OPTIK[index % DECK_OPTIK.length];
 
     const zeile = document.createElement("div");
@@ -139,15 +171,26 @@ function renderDashboard() {
     info.appendChild(titel);
     info.appendChild(details);
 
-    const pfeil = document.createElement("span");
-    pfeil.className = "deck-pfeil";
-    pfeil.textContent = "›";
+    const aktionen = document.createElement("div");
+    aktionen.className = "deck-aktionen";
+
+    const btnLernen = document.createElement("button");
+    btnLernen.className = "btn-deck-lernen";
+    btnLernen.textContent = "Lernen";
+    btnLernen.addEventListener("click", () => oeffneDeck(deck.id, "normal"));
+
+    const btnFehlerkarten = document.createElement("button");
+    btnFehlerkarten.className = "btn-deck-fehlerkarten";
+    btnFehlerkarten.textContent = `Fehlerkarten · ${fehlerkartenAnzahl}`;
+    btnFehlerkarten.addEventListener("click", () => oeffneDeck(deck.id, "fehlerkarten"));
+
+    aktionen.appendChild(btnLernen);
+    aktionen.appendChild(btnFehlerkarten);
 
     zeile.appendChild(icon);
     zeile.appendChild(info);
-    zeile.appendChild(pfeil);
+    zeile.appendChild(aktionen);
 
-    zeile.addEventListener("click", () => oeffneDeck(deck.id));
     deckListe.appendChild(zeile);
   });
 
@@ -203,13 +246,32 @@ deckForm.addEventListener("submit", (event) => {
 // ANSICHT 2: LERNMODUS
 // ============================================================
 
-// Wechselt von der Dashboard-Ansicht in den Lernmodus für ein bestimmtes Deck
-function oeffneDeck(deckId) {
+// Gibt alle aktuellen Fehlerkarten eines Decks zurück
+function fehlerkartenDesDecks(deck) {
+  return deck.karten.filter((k) => k.istFehlerkarte);
+}
+
+// Wechselt von der Dashboard-Ansicht in den Lernmodus für ein bestimmtes Deck.
+// modus ist entweder "normal" (alle noch nicht gekonnten Karten) oder
+// "fehlerkarten" (nur die aktuellen Fehlerkarten dieses Decks).
+function oeffneDeck(deckId, modus) {
   aktuellesDeckId = deckId;
+  aktuellerLernModus = modus;
   const deck = aktuellesDeck();
 
+  sessionRichtigKlicks = 0;
+  sessionFalschKlicks = 0;
+
   deckTitelAnzeige.textContent = deck.titel;
-  queue = deck.karten.filter((k) => !k.gekonnt);
+
+  if (modus === "fehlerkarten") {
+    queue = fehlerkartenDesDecks(deck);
+    sessionFehlerkartenGesamt = queue.length;
+    modusHinweis.classList.remove("hidden");
+  } else {
+    queue = deck.karten.filter((k) => !k.gekonnt);
+    modusHinweis.classList.add("hidden");
+  }
 
   renderKartenListe();
   starteAnzeige();
@@ -257,9 +319,32 @@ function zeigeZustand(zustand) {
     buttonsBereich.classList.remove("hidden");
   } else if (zustand === "fertig") {
     fertigNachricht.classList.remove("hidden");
+    anzeigeFertigStatistik();
   } else if (zustand === "leer") {
     keineKartenNachricht.classList.remove("hidden");
   }
+}
+
+// Zeigt nach einem abgeschlossenen Durchlauf (oder beim Öffnen eines leeren
+// Fehlerkarten-Decks) die passende Erfolgsmeldung + Statistik zu diesem Durchlauf.
+function anzeigeFertigStatistik() {
+  if (aktuellerLernModus === "fehlerkarten") {
+    fertigTitel.textContent = "🎉 Keine Fehlerkarten mehr! Du hast aktuell alle schwierigen Karten gemeistert.";
+    btnNeustart.classList.add("hidden"); // "Nochmal von vorne" ergibt hier keinen Sinn
+  } else {
+    fertigTitel.textContent = "🎉 Geschafft! Du kannst alle Karten dieses Decks.";
+    btnNeustart.classList.remove("hidden");
+  }
+
+  const gesamtKlicks = sessionRichtigKlicks + sessionFalschKlicks;
+  if (gesamtKlicks === 0) {
+    fertigStatistik.textContent = "";
+    return;
+  }
+
+  const prozentRichtig = Math.round((sessionRichtigKlicks / gesamtKlicks) * 100);
+  const prozentFalsch = 100 - prozentRichtig;
+  fertigStatistik.textContent = `In diesem Durchlauf: ${prozentRichtig} % richtig, ${prozentFalsch} % falsch (${gesamtKlicks} Bewertungen)`;
 }
 
 // Zeigt die aktuell erste Karte der Warteschlange an
@@ -270,9 +355,25 @@ function zeigeAktuelleKarte() {
   antwortText.textContent = aktuelleKarte.antwort;
 }
 
-// Aktualisiert Text und Balken der Fortschrittsanzeige im Lernmodus
+// Aktualisiert Text und Balken der Fortschrittsanzeige im Lernmodus.
+// Im Fehlerkarten-Modus zeigen wir statt "Karte X von Y" den einfachen
+// Hinweis "Noch X Fehlerkarten", wie gewünscht.
 function aktualisiereFortschritt() {
   const deck = aktuellesDeck();
+
+  if (aktuellerLernModus === "fehlerkarten") {
+    const nochOffen = queue.length;
+    const prozent =
+      sessionFehlerkartenGesamt === 0
+        ? 100
+        : Math.round(((sessionFehlerkartenGesamt - nochOffen) / sessionFehlerkartenGesamt) * 100);
+
+    progressText.textContent = `Noch ${nochOffen} Fehlerkarte${nochOffen === 1 ? "" : "n"}`;
+    progressDetails.textContent = "";
+    progressFill.style.width = prozent + "%";
+    return;
+  }
+
   const gesamt = deck.karten.length;
   const gekonnt = deck.karten.filter((k) => k.gekonnt).length;
   const nochOffen = queue.length;
@@ -315,27 +416,47 @@ card.addEventListener("click", () => {
   cardInner.classList.toggle("flipped");
 });
 
-// "Gewusst": Karte wird dauerhaft als gekonnt markiert und verlässt die Warteschlange
+// "Gewusst": correctCount hoch, Karte verlässt die Warteschlange, gilt als gekonnt.
+// Nur im Fehlerkarten-Modus wird sie damit auch aus dem Fehlerkarten-Deck entfernt -
+// im normalen Modus bleibt eine bestehende Fehlerkarten-Markierung bestehen.
 btnGewusst.addEventListener("click", () => {
   const karte = queue.shift();
   karte.gekonnt = true;
+  karte.richtigAnzahl = (karte.richtigAnzahl || 0) + 1;
+  karte.zuletztGelernt = new Date().toISOString();
+
+  if (aktuellerLernModus === "fehlerkarten") {
+    karte.istFehlerkarte = false;
+  }
+
+  sessionRichtigKlicks++;
   speichereDecks();
   wennFertigOderNaechsteKarte();
 });
 
-// "Nicht gewusst": Karte wandert ans Ende der Warteschlange (bleibt "nicht gekonnt")
+// "Nicht gewusst": wrongCount hoch, Karte wird/bleibt Fehlerkarte und wandert
+// ans Ende der Warteschlange (kommt im selben Durchlauf wieder dran).
 btnNichtGewusst.addEventListener("click", () => {
   const karte = queue.shift();
+  karte.falschAnzahl = (karte.falschAnzahl || 0) + 1;
+  karte.istFehlerkarte = true;
+  karte.zuletztGelernt = new Date().toISOString();
+
+  sessionFalschKlicks++;
   queue.push(karte);
+  speichereDecks();
   wennFertigOderNaechsteKarte();
 });
 
-// "Nochmal von vorne": alle Karten dieses Decks wieder auf "nicht gekonnt" setzen
+// "Nochmal von vorne" (nur im normalen Modus sichtbar): ganzes Deck zurücksetzen
 btnNeustart.addEventListener("click", () => {
   const deck = aktuellesDeck();
   deck.karten.forEach((k) => (k.gekonnt = false));
   speichereDecks();
   queue = [...deck.karten];
+
+  sessionRichtigKlicks = 0;
+  sessionFalschKlicks = 0;
   starteAnzeige();
 });
 
@@ -379,7 +500,11 @@ karteForm.addEventListener("submit", (event) => {
     id: Date.now(),
     frage: inputFrage.value.trim(),
     antwort: inputAntwort.value.trim(),
-    gekonnt: false
+    gekonnt: false,
+    falschAnzahl: 0,
+    richtigAnzahl: 0,
+    istFehlerkarte: false,
+    zuletztGelernt: null
   };
 
   if (neueKarte.frage === "" || neueKarte.antwort === "") return;
@@ -388,7 +513,11 @@ karteForm.addEventListener("submit", (event) => {
   deck.karten.push(neueKarte);
   speichereDecks();
 
-  queue.push(neueKarte);
+  // Eine neue Karte ist noch nie falsch beantwortet worden, gehört also nur in
+  // den normalen Durchlauf, nicht automatisch in einen laufenden Fehlerkarten-Durchlauf.
+  if (aktuellerLernModus === "normal") {
+    queue.push(neueKarte);
+  }
   wennFertigOderNaechsteKarte();
 
   karteForm.reset();

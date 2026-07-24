@@ -128,12 +128,7 @@ h1, h2, h3 {
   display: flex;
   align-items: center;
   gap: 14px;
-  cursor: pointer;
-  transition: transform 0.15s ease;
-}
-
-.deck-zeile:hover {
-  transform: translateY(-2px);
+  flex-wrap: wrap;
 }
 
 .deck-icon {
@@ -163,9 +158,38 @@ h1, h2, h3 {
   color: var(--farbe-text-hell);
 }
 
-.deck-pfeil {
-  color: var(--farbe-text-hell);
-  font-size: 18px;
+/* Die zwei Aktions-Buttons rechts in jeder Deck-Zeile */
+.deck-aktionen {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.btn-deck-lernen,
+.btn-deck-fehlerkarten {
+  padding: 8px 14px;
+  font-size: 13px;
+  border-radius: 999px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn-deck-lernen {
+  background-color: var(--farbe-primaer-hell);
+  color: var(--farbe-primaer-dunkel);
+}
+
+.btn-deck-fehlerkarten {
+  background-color: #fff1e0;
+  color: #b9660f;
+}
+
+.btn-deck-lernen:hover,
+.btn-deck-fehlerkarten:hover {
+  opacity: 0.85;
 }
 
 /* ---- "Neues Deck erstellen" ---- */
@@ -285,6 +309,20 @@ h1, h2, h3 {
 #deck-titel-anzeige {
   margin-top: 0;
   margin-bottom: 20px;
+}
+
+/* Hinweis-Text, wenn man sich im Fehlerkarten-Modus befindet */
+#modus-hinweis {
+  color: #b9660f;
+  font-weight: 700;
+  font-size: 13px;
+  margin: -10px 0 20px 0;
+}
+
+#fertig-statistik {
+  color: var(--farbe-text-hell);
+  font-size: 14px;
+  margin: 4px 0 18px 0;
 }
 
 /* Fortschrittsanzeige oberhalb der Karte */
