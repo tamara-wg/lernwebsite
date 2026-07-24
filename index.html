@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karteikarten lernen</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Kopfleiste mit Logo und Titel -->
+  <header class="app-header">
+    <div class="app-logo">📚</div>
+    <div class="app-titel-block">
+      <h1>Karteikarten lernen</h1>
+      <p class="app-untertitel">dein persönlicher Lernbegleiter</p>
+    </div>
+  </header>
+
+  <!-- ================= ANSICHT 1: DASHBOARD ================= -->
+  <!-- Übersicht aller Decks. Diese Ansicht ist beim Start sichtbar. -->
+  <div id="view-dashboard">
+    <div class="dashboard-layout">
+
+      <!-- Linke Spalte: Deck-Liste -->
+      <div class="dashboard-links">
+        <h2 class="bereich-titel">Deine Decks</h2>
+        <div class="deck-liste" id="deck-liste">
+          <!-- Deck-Zeilen werden hier per JavaScript eingefügt -->
+        </div>
+
+        <div class="neues-deck">
+          <button id="btn-toggle-neues-deck" class="btn btn-toggle">+ Neues Deck erstellen</button>
+          <form id="deck-form" class="hidden">
+            <input type="text" id="input-deck-titel" placeholder="Deck-Titel (z. B. Mathe)" required>
+            <button type="submit" class="btn btn-green">Erstellen</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Rechte Spalte: Gesamtfortschritt -->
+      <div class="dashboard-rechts">
+        <div class="fortschritt-panel">
+          <h3>Dein Fortschritt</h3>
+          <div class="fortschritt-ring" id="fortschritt-ring">
+            <span id="fortschritt-prozent">0%</span>
+          </div>
+          <ul class="fortschritt-legende">
+            <li><span class="punkt punkt-gruen"></span> Kann ich <b id="stat-kannich">0</b></li>
+            <li><span class="punkt punkt-rot"></span> Muss ich üben <b id="stat-uebem">0</b></li>
+            <li><span class="punkt punkt-grau"></span> Gesamt <b id="stat-gesamt">0</b></li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= ANSICHT 2: LERNMODUS (für ein ausgewähltes Deck) ================= -->
+  <!-- Erstmal versteckt, wird erst sichtbar, wenn man auf ein Deck klickt -->
+  <div id="view-lernmodus" class="hidden">
+
+    <div class="lernmodus-kopf">
+      <button id="btn-zurueck" class="btn btn-toggle">← Zurück zum Dashboard</button>
+      <button id="btn-deck-loeschen" class="btn-delete">🗑 Deck löschen</button>
+    </div>
+
+    <h2 id="deck-titel-anzeige">Deckname</h2>
+
+    <!-- Fortschrittsanzeige -->
+    <div class="progress-info">
+      <p id="progress-text">Karte 1 von 5</p>
+      <p id="progress-details">Kann ich: 0 &nbsp;|&nbsp; Noch offen: 5</p>
+      <div class="progress-bar">
+        <div id="progress-fill" class="progress-fill"></div>
+      </div>
+    </div>
+
+    <!-- Die Karte -->
+    <div class="card" id="card">
+      <div class="card-inner" id="card-inner">
+        <div class="card-front">
+          <span class="label">Frage</span>
+          <p class="text" id="frage-text">Frage</p>
+        </div>
+        <div class="card-back">
+          <span class="label">Antwort</span>
+          <p class="text" id="antwort-text">Antwort</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="hint">Klicke auf die Karte, um sie umzudrehen</p>
+
+    <div class="buttons">
+      <button id="btn-nicht-gewusst" class="btn btn-red">
+        <span class="btn-titel">✗ Nicht gewusst</span>
+        <span class="btn-sub">muss ich üben</span>
+      </button>
+      <button id="btn-gewusst" class="btn btn-green">
+        <span class="btn-titel">✓ Gewusst</span>
+        <span class="btn-sub">kann ich</span>
+      </button>
+    </div>
+
+    <div id="fertig-nachricht" class="hidden">
+      <h2>🎉 Geschafft! Du kannst alle Karten dieses Decks.</h2>
+      <button id="btn-neustart" class="btn btn-restart">↻ Nochmal von vorne</button>
+    </div>
+
+    <div id="keine-karten-nachricht" class="hidden">
+      <p>Noch keine Karten in diesem Deck. Füge unten welche hinzu ⬇️</p>
+    </div>
+
+    <hr class="trenner">
+
+    <!-- Kartenverwaltung für das aktuell geöffnete Deck -->
+    <div class="verwaltung">
+      <button id="btn-toggle-verwaltung" class="btn btn-toggle">📋 Karten verwalten</button>
+
+      <div id="verwaltung-inhalt" class="hidden">
+        <h3>Neue Karte hinzufügen</h3>
+        <form id="karte-form">
+          <input type="text" id="input-frage" placeholder="Frage" required>
+          <input type="text" id="input-antwort" placeholder="Antwort" required>
+          <button type="submit" class="btn btn-green">+ Hinzufügen</button>
+        </form>
+
+        <h3>Vorhandene Karten (<span id="anzahl-karten">0</span>)</h3>
+        <ul id="karten-liste"></ul>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
