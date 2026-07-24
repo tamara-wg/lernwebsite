@@ -99,38 +99,83 @@ const anzahlKartenSpan = document.getElementById("anzahl-karten");
 // ANSICHT 1: DASHBOARD
 // ============================================================
 
-// Baut die Deck-Kacheln neu auf (z. B. nach Änderungen am Fortschritt)
+// Rein optische Icon-/Farb-Kombinationen für die Deck-Zeilen (reihum vergeben).
+// Das ist nur Design - hat keinen Einfluss auf die gespeicherten Deck-Daten.
+const DECK_OPTIK = [
+  { icon: "📘", farbe: "#e6f0fb" },
+  { icon: "📗", farbe: "#eae6fb" },
+  { icon: "📙", farbe: "#e2f6ec" },
+  { icon: "📕", farbe: "#fdf1d9" },
+  { icon: "📓", farbe: "#fde3ea" }
+];
+
+// Baut die Deck-Liste sowie den Gesamt-Fortschritt neu auf
+// (z. B. nach dem Öffnen/Verlassen eines Decks oder Änderungen am Fortschritt)
 function renderDashboard() {
   deckListe.innerHTML = "";
 
-  decks.forEach((deck) => {
+  decks.forEach((deck, index) => {
     const gesamt = deck.karten.length;
     const gekonnt = deck.karten.filter((k) => k.gekonnt).length;
-    const prozent = gesamt === 0 ? 0 : Math.round((gekonnt / gesamt) * 100);
+    const optik = DECK_OPTIK[index % DECK_OPTIK.length];
 
-    const kachel = document.createElement("div");
-    kachel.className = "deck-kachel";
+    const zeile = document.createElement("div");
+    zeile.className = "deck-zeile";
+
+    const icon = document.createElement("div");
+    icon.className = "deck-icon";
+    icon.style.backgroundColor = optik.farbe;
+    icon.textContent = optik.icon;
+
+    const info = document.createElement("div");
+    info.className = "deck-info";
 
     const titel = document.createElement("h3");
     titel.textContent = deck.titel;
 
-    const info = document.createElement("p");
-    info.textContent = `${gesamt} Karte${gesamt === 1 ? "" : "n"} · ${gekonnt}/${gesamt} gekonnt`;
+    const details = document.createElement("p");
+    details.textContent = `${gesamt} Karte${gesamt === 1 ? "" : "n"} · ${gekonnt}/${gesamt} gekonnt`;
 
-    const balkenAussen = document.createElement("div");
-    balkenAussen.className = "progress-bar";
-    const balkenInnen = document.createElement("div");
-    balkenInnen.className = "progress-fill";
-    balkenInnen.style.width = prozent + "%";
-    balkenAussen.appendChild(balkenInnen);
+    info.appendChild(titel);
+    info.appendChild(details);
 
-    kachel.appendChild(titel);
-    kachel.appendChild(info);
-    kachel.appendChild(balkenAussen);
+    const pfeil = document.createElement("span");
+    pfeil.className = "deck-pfeil";
+    pfeil.textContent = "›";
 
-    kachel.addEventListener("click", () => oeffneDeck(deck.id));
-    deckListe.appendChild(kachel);
+    zeile.appendChild(icon);
+    zeile.appendChild(info);
+    zeile.appendChild(pfeil);
+
+    zeile.addEventListener("click", () => oeffneDeck(deck.id));
+    deckListe.appendChild(zeile);
   });
+
+  aktualisiereGesamtFortschritt();
+}
+
+// Berechnet den Fortschritt über ALLE Decks hinweg und zeigt ihn im Ring
+// plus der kleinen Liste daneben an (rein darstellend, verändert keine Daten).
+function aktualisiereGesamtFortschritt() {
+  let gesamtAlleDecks = 0;
+  let gekonntAlleDecks = 0;
+
+  decks.forEach((deck) => {
+    gesamtAlleDecks += deck.karten.length;
+    gekonntAlleDecks += deck.karten.filter((k) => k.gekonnt).length;
+  });
+
+  const uebenAlleDecks = gesamtAlleDecks - gekonntAlleDecks;
+  const prozent = gesamtAlleDecks === 0 ? 0 : Math.round((gekonntAlleDecks / gesamtAlleDecks) * 100);
+
+  document.getElementById("fortschritt-prozent").textContent = prozent + "%";
+  document.getElementById("stat-kannich").textContent = gekonntAlleDecks;
+  document.getElementById("stat-uebem").textContent = uebenAlleDecks;
+  document.getElementById("stat-gesamt").textContent = gesamtAlleDecks;
+
+  const ring = document.getElementById("fortschritt-ring");
+  const winkel = (prozent / 100) * 360;
+  ring.style.background = `conic-gradient(var(--farbe-primaer) ${winkel}deg, var(--farbe-primaer-hell) ${winkel}deg)`;
 }
 
 // Auf-/Zuklappen des "Neues Deck erstellen"-Formulars

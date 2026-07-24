@@ -1,102 +1,518 @@
-/* Grundlegendes Aussehen der Seite */
+/* ==========================================================
+   Farben, Rundungen und Schatten an einer zentralen Stelle
+   definiert (sogenannte "CSS-Variablen"), damit das gesamte
+   Design einheitlich bleibt und einfach anpassbar ist.
+   ========================================================== */
+:root {
+  --farbe-primaer: #1a9d90;
+  --farbe-primaer-dunkel: #12776d;
+  --farbe-primaer-hell: #e3f5f2;
+
+  --farbe-rot: #e8604c;
+  --farbe-rot-hell: #fde7e3;
+
+  --farbe-gruen: #2ea86f;
+  --farbe-gruen-hell: #e2f6ec;
+
+  --farbe-text: #1f2933;
+  --farbe-text-hell: #7b8794;
+  --farbe-hintergrund: #f2f6f5;
+  --farbe-karte: #ffffff;
+
+  --radius-gross: 20px;
+  --radius-mittel: 14px;
+  --radius-klein: 10px;
+  --schatten: 0 6px 18px rgba(20, 45, 40, 0.08);
+}
+
+/* Grundlegendes Aussehen der Seite.
+   Als Schriftart nutzen wir die Standardschrift des Betriebssystems
+   (kein Download von einem Drittanbieter nötig -> schneller & sicherer). */
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f6f8;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--farbe-hintergrund);
+  color: var(--farbe-text);
   text-align: center;
-  padding: 40px 20px;
+  padding: 24px 16px 60px 16px;
+  margin: 0;
 }
 
-h1 {
-  color: #222;
-  margin-bottom: 20px;
-}
-
-/* Fortschrittsanzeige oberhalb der Karte */
-.progress-info {
-  max-width: 400px;
-  margin: 0 auto 25px auto;
-}
-
-#progress-text {
-  font-weight: bold;
-  color: #222;
-  margin-bottom: 4px;
-}
-
-#progress-details {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 8px;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 10px;
-  background-color: #e0e0e0;
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  width: 0%;
-  background-color: #27ae60;
-  transition: width 0.3s ease;
+h1, h2, h3 {
+  color: var(--farbe-text);
 }
 
 .hidden {
   display: none;
 }
 
+/* ---- Kopfleiste ---- */
+.app-header {
+  max-width: 900px;
+  margin: 0 auto 28px auto;
+  background-color: var(--farbe-karte);
+  border-radius: var(--radius-gross);
+  box-shadow: var(--schatten);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-align: left;
+  flex-wrap: wrap;
+}
+
+.app-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--farbe-primaer), var(--farbe-primaer-dunkel));
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.app-titel-block h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.app-untertitel {
+  margin: 2px 0 0 0;
+  font-size: 13px;
+  color: var(--farbe-text-hell);
+}
+
+/* ==========================================================
+   DASHBOARD
+   ========================================================== */
+.dashboard-layout {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.dashboard-links {
+  flex: 1 1 380px;
+}
+
+.dashboard-rechts {
+  flex: 0 1 300px;
+}
+
+.bereich-titel {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--farbe-text-hell);
+  margin: 0 0 12px 4px;
+}
+
+/* ---- Deck-Liste (Zeilen statt Kacheln, wie "Kategorien" im Referenzbild) ---- */
+.deck-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.deck-zeile {
+  background-color: var(--farbe-karte);
+  border-radius: var(--radius-mittel);
+  box-shadow: var(--schatten);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.deck-zeile:hover {
+  transform: translateY(-2px);
+}
+
+.deck-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.deck-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.deck-info h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.deck-info p {
+  margin: 2px 0 0 0;
+  font-size: 13px;
+  color: var(--farbe-text-hell);
+}
+
+.deck-pfeil {
+  color: var(--farbe-text-hell);
+  font-size: 18px;
+}
+
+/* ---- "Neues Deck erstellen" ---- */
+.neues-deck {
+  margin-top: 20px;
+}
+
+#deck-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  background-color: var(--farbe-karte);
+  border-radius: var(--radius-mittel);
+  box-shadow: var(--schatten);
+  padding: 16px;
+}
+
+#deck-form input {
+  padding: 10px 12px;
+  border: 1px solid #dfe4e6;
+  border-radius: var(--radius-klein);
+  font-size: 14px;
+  font-family: inherit;
+}
+
+/* ---- Fortschritts-Panel (rechte Spalte) ---- */
+.fortschritt-panel {
+  background-color: var(--farbe-karte);
+  border-radius: var(--radius-mittel);
+  box-shadow: var(--schatten);
+  padding: 20px;
+  text-align: center;
+}
+
+.fortschritt-panel h3 {
+  margin: 0 0 18px 0;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--farbe-text-hell);
+  text-align: left;
+}
+
+/* Der Ring wird per JavaScript eingefärbt (conic-gradient), abhängig vom Fortschritt.
+   Der weiße Kreis in der Mitte entsteht durch ::before (ein "unsichtbares" Extra-Element per CSS). */
+.fortschritt-ring {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  margin: 0 auto 18px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: conic-gradient(var(--farbe-primaer) 0deg, var(--farbe-primaer-hell) 0deg);
+}
+
+.fortschritt-ring::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  background-color: var(--farbe-karte);
+  border-radius: 50%;
+}
+
+#fortschritt-prozent {
+  position: relative;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.fortschritt-legende {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.fortschritt-legende li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fortschritt-legende b {
+  margin-left: auto;
+}
+
+.punkt {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.punkt-gruen { background-color: var(--farbe-gruen); }
+.punkt-rot { background-color: var(--farbe-rot); }
+.punkt-grau { background-color: #d7dde1; }
+
+/* ==========================================================
+   LERNMODUS
+   ========================================================== */
+.lernmodus-kopf {
+  max-width: 520px;
+  margin: 0 auto 15px auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#deck-titel-anzeige {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+/* Fortschrittsanzeige oberhalb der Karte */
+.progress-info {
+  max-width: 520px;
+  margin: 0 auto 25px auto;
+  text-align: left;
+}
+
+#progress-text {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+#progress-details {
+  font-size: 13px;
+  color: var(--farbe-text-hell);
+  margin-bottom: 8px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #e4e9e8;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background-color: var(--farbe-primaer);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+/* Die Karte: legt Größe und Position fest.
+   "perspective" sorgt dafür, dass die Drehung später 3D-artig aussieht. */
+.card {
+  width: 520px;
+  max-width: 92%;
+  height: 280px;
+  margin: 0 auto;
+  perspective: 1000px;
+  cursor: pointer;
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  box-shadow: var(--schatten);
+  border-radius: var(--radius-gross);
+}
+
+.card-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+.card-front,
+.card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: var(--radius-gross);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.card-front {
+  background-color: var(--farbe-karte);
+}
+
+.card-back {
+  background-color: var(--farbe-primaer-hell);
+  transform: rotateY(180deg);
+}
+
+/* "FRAGE" / "ANTWORT" als kleine runde Pille, wie im Referenzbild */
+.label {
+  display: inline-block;
+  background-color: var(--farbe-primaer-hell);
+  color: var(--farbe-primaer-dunkel);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 999px;
+  margin-bottom: 16px;
+}
+
+.card-back .label {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.text {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.hint {
+  margin-top: 15px;
+  color: var(--farbe-text-hell);
+  font-size: 14px;
+}
+
+/* Die Buttons unter der Karte */
+.buttons {
+  margin-top: 26px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.btn {
+  padding: 14px 22px;
+  font-size: 15px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+  font-family: inherit;
+}
+
+.btn:hover {
+  opacity: 0.85;
+}
+
+/* Buttons mit fettem Titel + kleinem grauem Untertext (Gewusst/Nicht gewusst) */
+#btn-gewusst,
+#btn-nicht-gewusst {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 16px 20px;
+}
+
+.btn-titel {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.btn-sub {
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.75;
+}
+
+.btn-red {
+  background-color: var(--farbe-rot-hell);
+  color: var(--farbe-rot);
+}
+
+.btn-green {
+  background-color: var(--farbe-gruen-hell);
+  color: var(--farbe-gruen);
+}
+
 #fertig-nachricht h2 {
-  color: #27ae60;
+  color: var(--farbe-gruen);
   margin-top: 20px;
 }
 
 .btn-restart {
-  background-color: #eaf1fb;
-  color: #2d6cc0;
+  background-color: var(--farbe-primaer-hell);
+  color: var(--farbe-primaer-dunkel);
   margin-top: 15px;
 }
 
 #keine-karten-nachricht {
-  color: #666;
+  color: var(--farbe-text-hell);
   margin-top: 20px;
 }
 
 /* Trennlinie zwischen Lernbereich und Verwaltung */
 .trenner {
-  max-width: 500px;
+  max-width: 520px;
   margin: 40px auto;
   border: none;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid #e0e6e5;
 }
 
-/* Kartenverwaltung */
+/* ---- Kartenverwaltung ---- */
 .verwaltung {
-  max-width: 500px;
+  max-width: 520px;
   margin: 0 auto 60px auto;
   text-align: left;
 }
 
 .btn-toggle {
-  background-color: #f0f0f0;
-  color: #333;
+  background-color: var(--farbe-karte);
+  color: var(--farbe-text);
   width: 100%;
   text-align: left;
+  box-shadow: var(--schatten);
+  border-radius: var(--radius-mittel);
+}
+
+.lernmodus-kopf .btn-toggle {
+  width: auto;
+  border-radius: 999px;
 }
 
 #verwaltung-inhalt {
-  margin-top: 20px;
-  background-color: #ffffff;
-  border-radius: 12px;
+  margin-top: 16px;
+  background-color: var(--farbe-karte);
+  border-radius: var(--radius-mittel);
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--schatten);
 }
 
 #verwaltung-inhalt h3 {
-  font-size: 16px;
-  color: #333;
+  font-size: 15px;
   margin-top: 0;
 }
 
@@ -110,10 +526,11 @@ h1 {
 #karte-form input {
   flex: 1;
   min-width: 150px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  padding: 10px 12px;
+  border: 1px solid #dfe4e6;
+  border-radius: var(--radius-klein);
   font-size: 14px;
+  font-family: inherit;
 }
 
 #karten-liste {
@@ -127,199 +544,60 @@ h1 {
   justify-content: space-between;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #eef1f0;
   font-size: 14px;
 }
 
 .karte-text {
-  color: #333;
+  color: var(--farbe-text);
 }
 
 .btn-delete {
   background: none;
   border: none;
-  color: #c0392b;
+  color: var(--farbe-rot);
   cursor: pointer;
   font-size: 14px;
   padding: 4px 8px;
+  font-family: inherit;
 }
 
 .btn-delete:hover {
   opacity: 0.7;
 }
 
-/* Die Karte: legt Größe und Position fest.
-   "perspective" sorgt dafür, dass die Drehung später 3D-artig aussieht. */
-.card {
-  width: 400px;
-  max-width: 90%;
-  height: 250px;
-  margin: 0 auto;
-  perspective: 1000px;
-  cursor: pointer;
+/* ==========================================================
+   RESPONSIVE: Anpassungen für Tablet & Smartphone
+   ========================================================== */
+@media (max-width: 760px) {
+  .dashboard-layout {
+    flex-direction: column;
+  }
+
+  .dashboard-rechts {
+    flex-basis: auto;
+    width: 100%;
+  }
 }
 
-/* Der innere Teil der Karte, der sich beim Klick dreht */
-.card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transition: transform 0.6s;
-  transform-style: preserve-3d;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  border-radius: 12px;
-}
+@media (max-width: 480px) {
+  body {
+    padding: 16px 10px 50px 10px;
+  }
 
-/* Diese Klasse wird per JavaScript hinzugefügt, wenn die Karte umgedreht ist */
-.card-inner.flipped {
-  transform: rotateY(180deg);
-}
+  .app-header {
+    padding: 12px 16px;
+  }
 
-/* Vorder- und Rückseite liegen exakt übereinander,
-   "backface-visibility: hidden" versteckt die jeweils abgewandte Seite */
-.card-front,
-.card-back {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  box-sizing: border-box;
-}
+  .card {
+    height: 260px;
+  }
 
-.card-front {
-  background-color: #ffffff;
-}
+  .text {
+    font-size: 19px;
+  }
 
-.card-back {
-  background-color: #e8f5f0;
-  transform: rotateY(180deg);
-}
-
-.label {
-  font-size: 14px;
-  text-transform: uppercase;
-  color: #888;
-  margin-bottom: 10px;
-}
-
-.text {
-  font-size: 22px;
-  font-weight: bold;
-  color: #222;
-}
-
-.hint {
-  margin-top: 15px;
-  color: #999;
-  font-size: 14px;
-}
-
-/* Die Buttons unter der Karte */
-.buttons {
-  margin-top: 30px;
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-}
-
-.btn {
-  padding: 14px 24px;
-  font-size: 16px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.btn-red {
-  background-color: #fbe2e2;
-  color: #c0392b;
-}
-
-.btn-green {
-  background-color: #dff5e8;
-  color: #27ae60;
-}
-
-.btn:hover {
-  opacity: 0.85;
-}
-
-/* ---- Dashboard: Deck-Kacheln ---- */
-.deck-liste {
-  max-width: 700px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
-}
-
-.deck-kachel {
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  cursor: pointer;
-  text-align: left;
-  transition: transform 0.15s ease;
-}
-
-.deck-kachel:hover {
-  transform: translateY(-3px);
-}
-
-.deck-kachel h3 {
-  margin: 0 0 6px 0;
-  color: #222;
-}
-
-.deck-kachel p {
-  margin: 0 0 10px 0;
-  font-size: 14px;
-  color: #666;
-}
-
-/* ---- "Neues Deck" Bereich unter den Kacheln ---- */
-.neues-deck {
-  max-width: 300px;
-  margin: 30px auto 0 auto;
-}
-
-#deck-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-#deck-form input {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-/* ---- Kopfbereich im Lernmodus (Zurück-Button + Deck löschen) ---- */
-.lernmodus-kopf {
-  max-width: 500px;
-  margin: 0 auto 15px auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.lernmodus-kopf .btn-toggle {
-  width: auto;
-}
-
-#deck-titel-anzeige {
-  margin-top: 0;
-  margin-bottom: 20px;
-  color: #222;
+  .buttons {
+    flex-direction: column;
+  }
 }
