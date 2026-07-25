@@ -23,6 +23,9 @@
   --radius-mittel: 14px;
   --radius-klein: 10px;
   --schatten: 0 6px 18px rgba(20, 45, 40, 0.08);
+  /* Feinerer, dezenterer Schatten aus dem Figma-Frame der Lernen-Seite
+     (Fortschrittsbalken, Karte, Seitenkästen, Navigation). */
+  --schatten-fein: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 /* Grundlegendes Aussehen der Seite.
@@ -109,8 +112,8 @@ h1, h2, h3 {
   max-width: 1100px;
   margin: 0 auto 28px auto;
   background-color: var(--farbe-karte);
-  border-radius: var(--radius-gross);
-  box-shadow: var(--schatten);
+  border-radius: 28px;
+  box-shadow: var(--schatten-fein);
   padding: 12px 22px;
   display: flex;
   align-items: center;
@@ -331,6 +334,15 @@ h1, h2, h3 {
   text-align: center;
 }
 
+/* Die zwei Seitenkästen im Lernmodus (Session-Fortschritt + Themen) nach
+   dem Figma-Frame: etwas stärker gerundet und mit feinerem Schatten als
+   das übrige (unveränderte) Fortschritts-Panel im Dashboard. */
+.session-fortschritt-panel,
+.themen-panel {
+  border-radius: var(--radius-gross);
+  box-shadow: var(--schatten-fein);
+}
+
 .fortschritt-panel h3 {
   margin: 0 0 18px 0;
   font-size: 13px;
@@ -408,22 +420,26 @@ h1, h2, h3 {
 /* Zweispaltiges Layout: links die eigentliche Lernkarte, rechts
    Fortschritt dieser Session + Themenliste (wie im Referenzbild). */
 .lernmodus-layout {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
   display: flex;
   flex-wrap: wrap;
-  gap: 24px;
+  gap: 32px;
   align-items: flex-start;
   text-align: left;
 }
 
+/* Breiten-Verhältnis Hauptbereich : Seitenspalte aus Figma übernommen
+   (785 : 480 ≈ 62 % : 38 % der Inhaltsbreite) - "flex-basis" ist dabei nur
+   ein Wunschwert, auf den sich der Browser bei Platzmangel flexibel
+   einstellt (z. B. gestapelt auf schmalen Bildschirmen). */
 .lernmodus-haupt {
-  flex: 1 1 560px;
+  flex: 1 1 620px;
   min-width: 0;
 }
 
 .lernmodus-seite {
-  flex: 0 1 320px;
+  flex: 1 1 380px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -513,7 +529,10 @@ h1, h2, h3 {
 .card {
   width: 100%;
   max-width: 640px;
-  height: 320px;
+  /* Seitenverhältnis der Lernkarte aus Figma (785 x 447) übernommen, statt
+     einer festen Höhe - die Karte bleibt so bei jeder Bildschirmgröße im
+     richtigen Verhältnis, ohne unten abgeschnitten zu werden. */
+  aspect-ratio: 785 / 447;
   margin: 0;
   perspective: 1000px;
   cursor: pointer;
@@ -525,7 +544,7 @@ h1, h2, h3 {
   height: 100%;
   transition: transform 0.6s;
   transform-style: preserve-3d;
-  box-shadow: var(--schatten);
+  box-shadow: var(--schatten-fein);
   border-radius: var(--radius-gross);
 }
 
@@ -558,30 +577,18 @@ h1, h2, h3 {
   transform: rotateY(180deg);
 }
 
-/* Deko-Punktraster oben rechts auf der Kartenvorderseite (aus dem Bild ausgemessen) */
+/* Komplette Deko-Ebene der Kartenvorderseite, 1:1 aus Figma übernommen
+   ("Lernkartendesign"-Gruppe): Blobs unten links/oben rechts, Punktwolke,
+   zwei Schwung-Linien und die kleinen Pfeil-Markierungen neben "FRAGE".
+   Die Insets entsprechen dem leichten Überstand über den Kartenrand
+   hinaus, den Figma für diese Gruppe vorgibt. */
 .card-front::before {
   content: "";
   position: absolute;
-  top: 30px;
-  right: 25px;
-  width: 90px;
-  height: 90px;
-  background-image: radial-gradient(rgba(20, 30, 60, 0.4) 1.4px, transparent 1.6px);
-  background-size: 12px 12px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Weicher blauer Deko-Blob unten links, der aus der Ecke "herausläuft" */
-.card-front::after {
-  content: "";
-  position: absolute;
-  bottom: -50px;
-  left: -50px;
-  width: 240px;
-  height: 240px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(62, 136, 238, 0.28) 0%, rgba(62, 136, 238, 0) 70%);
+  inset: -0.89% -0.7% -1.79% -0.76%;
+  background-image: url("images/lernkarte-deko-vorne.svg");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
   pointer-events: none;
   z-index: 0;
 }
@@ -618,6 +625,7 @@ h1, h2, h3 {
   margin-top: 15px;
   color: var(--farbe-text-hell);
   font-size: 14px;
+  text-align: center;
 }
 
 /* Die Buttons unter der Karte */
@@ -664,9 +672,11 @@ h1, h2, h3 {
   align-items: center;
   gap: 17px;
   padding: 22px 24px;
+  position: relative;
+  overflow: hidden;
   border: 3px solid #ffffff;
   box-sizing: border-box;
-  border-radius: 22px;
+  border-radius: var(--radius-gross);
   cursor: pointer;
   font-family: inherit;
   text-align: left;
@@ -682,6 +692,8 @@ h1, h2, h3 {
 }
 
 .btn-antwort-icon {
+  position: relative;
+  z-index: 1;
   flex-shrink: 0;
   width: 46px;
   height: 46px;
@@ -697,6 +709,8 @@ h1, h2, h3 {
 }
 
 .btn-antwort-text {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -715,10 +729,25 @@ h1, h2, h3 {
   color: var(--farbe-text-hell);
 }
 
-/* Grundfarbe + weicher, dunklerer Verlauf, der unten rechts in die Ecke läuft
-   (aus dem Referenzbild gemessen: dort ist die Füllung sichtbar gesättigter) */
+/* Grundfarbe + echte Wellen-Deko-Form (aus Figma exportiertes SVG),
+   die unten rechts in die Ecke läuft - 1:1 wie im Figma-Frame, statt
+   einer nur angenäherten Farbverlauf-Form. */
 .btn-antwort-rot {
-  background: radial-gradient(circle at 90% 88%, rgb(253, 220, 219) 0%, rgb(254, 240, 241) 55%);
+  background-color: #fff0f2;
+}
+
+.btn-antwort-rot::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 116px;
+  height: 75px;
+  background-image: url("images/welle-rot.svg");
+  background-repeat: no-repeat;
+  background-position: bottom right;
+  background-size: contain;
+  pointer-events: none;
 }
 
 .btn-antwort-rot .btn-antwort-icon,
@@ -727,7 +756,21 @@ h1, h2, h3 {
 }
 
 .btn-antwort-gruen {
-  background: radial-gradient(circle at 90% 82%, rgb(208, 239, 233) 0%, rgb(236, 247, 246) 55%);
+  background-color: #ecf7f6;
+}
+
+.btn-antwort-gruen::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 158px;
+  height: 64px;
+  background-image: url("images/welle-gruen.svg");
+  background-repeat: no-repeat;
+  background-position: bottom right;
+  background-size: contain;
+  pointer-events: none;
 }
 
 .btn-antwort-gruen .btn-antwort-icon,
@@ -835,10 +878,6 @@ h1, h2, h3 {
 
   .site-nav-pillen {
     overflow-x: auto;
-  }
-
-  .card {
-    height: 260px;
   }
 
   .text {
