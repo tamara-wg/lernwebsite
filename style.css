@@ -58,27 +58,6 @@ h1, h2, h3 {
   pointer-events: none;
 }
 
-.deko-blob {
-  position: fixed;
-  border-radius: 50%;
-}
-
-.deko-blob-links {
-  left: -70px;
-  bottom: -70px;
-  width: 280px;
-  height: 280px;
-  background: radial-gradient(circle, rgb(132, 188, 240) 0%, rgba(132, 188, 240, 0) 70%);
-}
-
-.deko-blob-rechts {
-  right: -60px;
-  bottom: -60px;
-  width: 220px;
-  height: 220px;
-  background: radial-gradient(circle, rgb(149, 201, 245) 0%, rgba(149, 201, 245, 0) 70%);
-}
-
 .deko-raute {
   position: fixed;
   left: 10px;
@@ -88,6 +67,30 @@ h1, h2, h3 {
   background-color: rgb(57, 141, 232);
   transform: rotate(45deg);
   border-radius: 3px;
+}
+
+.deko-vektor {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: auto;
+  height: 45.14vh;
+}
+
+.deko-vektor-2 {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: auto;
+  height: 11.38vh;
+}
+
+.deko-vektor-3 {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: 12.68vh;
 }
 
 .deko-punkte {
@@ -101,43 +104,90 @@ h1, h2, h3 {
   opacity: 0.6;
 }
 
-/* ---- Kopfleiste ---- */
-.app-header {
-  max-width: 900px;
+/* ---- Globale Navigationsleiste (ersetzt die frühere Kopfleiste) ---- */
+.site-nav {
+  max-width: 1100px;
   margin: 0 auto 28px auto;
   background-color: var(--farbe-karte);
   border-radius: var(--radius-gross);
   box-shadow: var(--schatten);
-  padding: 14px 24px;
+  padding: 12px 22px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: space-between;
+  gap: 20px;
   text-align: left;
   flex-wrap: wrap;
 }
 
-.app-logo {
-  width: 48px;
-  height: 48px;
+.site-nav-marke {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.site-nav-logo {
+  width: 44px;
+  height: 44px;
   border-radius: 14px;
   background: linear-gradient(135deg, var(--farbe-primaer), var(--farbe-primaer-dunkel));
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 20px;
   flex-shrink: 0;
 }
 
-.app-titel-block h1 {
+.site-nav-titel-block h1 {
   margin: 0;
-  font-size: 20px;
+  font-size: 18px;
 }
 
-.app-untertitel {
+.site-nav-untertitel {
   margin: 2px 0 0 0;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--farbe-text-hell);
+}
+
+/* Pillenförmiger Container mit den einzelnen Nav-Punkten */
+.site-nav-pillen {
+  display: flex;
+  gap: 4px;
+  background-color: var(--farbe-hintergrund);
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.nav-pille {
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 10px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--farbe-text-hell);
+  white-space: nowrap;
+}
+
+.nav-pille:hover:not(:disabled) {
+  color: var(--farbe-text);
+}
+
+/* Aktiver Nav-Punkt: weißer Pillen-Hintergrund + Schatten, wie im Referenzbild */
+.nav-pille.aktiv {
+  background-color: var(--farbe-karte);
+  color: var(--farbe-primaer-dunkel);
+  box-shadow: var(--schatten);
+}
+
+/* "Karten" ist aktuell nur ein Platzhalter (Seite kommt später) */
+.nav-pille:disabled {
+  cursor: default;
+  opacity: 0.45;
 }
 
 /* ==========================================================
@@ -354,6 +404,32 @@ h1, h2, h3 {
 /* ==========================================================
    LERNMODUS
    ========================================================== */
+
+/* Zweispaltiges Layout: links die eigentliche Lernkarte, rechts
+   Fortschritt dieser Session + Themenliste (wie im Referenzbild). */
+.lernmodus-layout {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.lernmodus-haupt {
+  flex: 1 1 560px;
+  min-width: 0;
+}
+
+.lernmodus-seite {
+  flex: 0 1 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Wird weiterhin von der Statistik-Ansicht für ihre Kopfzeile verwendet */
 .lernmodus-kopf {
   max-width: 520px;
   margin: 0 auto 15px auto;
@@ -383,21 +459,37 @@ h1, h2, h3 {
 
 /* Fortschrittsanzeige oberhalb der Karte */
 .progress-info {
-  max-width: 520px;
-  margin: 0 auto 25px auto;
-  text-align: left;
+  max-width: 640px;
+  margin: 0 0 22px 0;
+}
+
+.progress-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--farbe-primaer-dunkel);
+  font-weight: 700;
+  margin: 0 0 6px 0;
+}
+
+.progress-kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
 }
 
 #progress-text {
   font-weight: 700;
-  font-size: 14px;
-  margin-bottom: 4px;
+  font-size: 20px;
+  margin: 0;
 }
 
-#progress-details {
-  font-size: 13px;
-  color: var(--farbe-text-hell);
-  margin-bottom: 8px;
+#progress-prozent {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--farbe-primaer-dunkel);
+  margin: 0;
 }
 
 .progress-bar {
@@ -419,10 +511,10 @@ h1, h2, h3 {
 /* Die Karte: legt Größe und Position fest.
    "perspective" sorgt dafür, dass die Drehung später 3D-artig aussieht. */
 .card {
-  width: 520px;
-  max-width: 92%;
-  height: 280px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: 640px;
+  height: 320px;
+  margin: 0;
   perspective: 1000px;
   cursor: pointer;
 }
@@ -531,9 +623,7 @@ h1, h2, h3 {
 /* Die Buttons unter der Karte */
 .buttons {
   margin-top: 26px;
-  max-width: 520px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 640px;
   display: flex;
   justify-content: center;
   gap: 20px;
@@ -661,21 +751,6 @@ h1, h2, h3 {
   margin-top: 20px;
 }
 
-/* Trennlinie zwischen Lernbereich und Verwaltung */
-.trenner {
-  max-width: 520px;
-  margin: 40px auto;
-  border: none;
-  border-top: 1px solid #e0e6e5;
-}
-
-/* ---- Kartenverwaltung ---- */
-.verwaltung {
-  max-width: 520px;
-  margin: 0 auto 60px auto;
-  text-align: left;
-}
-
 .btn-toggle {
   background-color: var(--farbe-karte);
   color: var(--farbe-text);
@@ -690,81 +765,27 @@ h1, h2, h3 {
   border-radius: 999px;
 }
 
-#verwaltung-inhalt {
-  margin-top: 16px;
-  background-color: var(--farbe-karte);
-  border-radius: var(--radius-mittel);
-  padding: 20px;
-  box-shadow: var(--schatten);
-}
-
-#verwaltung-inhalt h3 {
-  font-size: 15px;
-  margin-top: 0;
-}
-
-#karte-form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-#karte-form input {
-  flex: 1;
-  min-width: 150px;
-  padding: 10px 12px;
-  border: 1px solid #dfe4e6;
-  border-radius: var(--radius-klein);
-  font-size: 14px;
-  font-family: inherit;
-}
-
-#karten-liste {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-#karten-liste li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #eef1f0;
-  font-size: 14px;
-}
-
-.karte-text {
-  color: var(--farbe-text);
-}
-
-.btn-delete {
-  background: none;
+/* ---- Themen-Liste im Lernmodus (Kategorien-Zeilen, ganze Zeile klickbar) ---- */
+.themen-zeile {
   border: none;
-  color: var(--farbe-rot);
+  width: 100%;
+  text-align: left;
   cursor: pointer;
-  font-size: 14px;
-  padding: 4px 8px;
   font-family: inherit;
 }
 
-.btn-delete:hover {
-  opacity: 0.7;
+.themen-zeile:hover {
+  box-shadow: 0 6px 18px rgba(20, 45, 40, 0.14);
+}
+
+.themen-zeile.aktiv {
+  outline: 2px solid var(--farbe-primaer);
+  outline-offset: -2px;
 }
 
 /* ==========================================================
    STATISTIK
    ========================================================== */
-
-/* Der "Statistik"-Button in der Kopfleiste soll rechts stehen,
-   statt wie .btn-toggle normalerweise volle Breite einzunehmen. */
-.app-header .btn-toggle {
-  width: auto;
-  margin-left: auto;
-  border-radius: 999px;
-  white-space: nowrap;
-}
 
 /* Gemeinsame Breite/Zentrierung für den Kopfbereich und den Inhalt
    der Statistik-Ansicht (etwas breiter als der Lernmodus, da hier
@@ -789,11 +810,13 @@ h1, h2, h3 {
    RESPONSIVE: Anpassungen für Tablet & Smartphone
    ========================================================== */
 @media (max-width: 760px) {
-  .dashboard-layout {
+  .dashboard-layout,
+  .lernmodus-layout {
     flex-direction: column;
   }
 
-  .dashboard-rechts {
+  .dashboard-rechts,
+  .lernmodus-seite {
     flex-basis: auto;
     width: 100%;
   }
@@ -804,8 +827,14 @@ h1, h2, h3 {
     padding: 16px 10px 50px 10px;
   }
 
-  .app-header {
+  .site-nav {
     padding: 12px 16px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .site-nav-pillen {
+    overflow-x: auto;
   }
 
   .card {

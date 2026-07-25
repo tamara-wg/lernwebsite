@@ -91,6 +91,17 @@ let sessionRichtigKlicks = 0; // Zählt "Gewusst"-Klicks im aktuellen Durchlauf 
 let sessionFalschKlicks = 0;  // Zählt "Nicht gewusst"-Klicks im aktuellen Durchlauf
 let sessionFehlerkartenGesamt = 0; // Wie viele Fehlerkarten es beim Start dieses Fehlerkarten-Durchlaufs waren
 
+// Für den Fortschritts-Ring DIESER Session (rechts im Lernmodus, siehe Referenzbild):
+// anders als der Gesamt-Fortschritt im Dashboard bezieht sich das rein auf den
+// aktuell laufenden Durchlauf. Eine Karte ist "offen" (grau), bis sie in diesem
+// Durchlauf zum ersten Mal bewertet wurde; "muss ich üben" (rot), solange sie in
+// diesem Durchlauf schon mal falsch war und noch nicht richtig beantwortet wurde;
+// "kann ich" (grün), sobald sie in diesem Durchlauf richtig beantwortet wurde -
+// auch wenn sie vorher schon mal rot war.
+let sessionGekonntIds = new Set();
+let sessionFalschIds = new Set();
+let sessionGesamt = 0;
+
 function aktuellesDeck() {
   return decks.find((d) => d.id === aktuellesDeckId);
 }
@@ -100,7 +111,10 @@ const viewDashboard = document.getElementById("view-dashboard");
 const viewLernmodus = document.getElementById("view-lernmodus");
 const viewStatistik = document.getElementById("view-statistik");
 
-const btnZeigeStatistik = document.getElementById("btn-zeige-statistik");
+const navHome = document.getElementById("nav-home");
+const navLernen = document.getElementById("nav-lernen");
+const navFortschritt = document.getElementById("nav-fortschritt");
+
 const btnStatistikZurueck = document.getElementById("btn-statistik-zurueck");
 const statistikListe = document.getElementById("statistik-liste");
 
@@ -109,9 +123,8 @@ const btnToggleNeuesDeck = document.getElementById("btn-toggle-neues-deck");
 const deckForm = document.getElementById("deck-form");
 const inputDeckTitel = document.getElementById("input-deck-titel");
 
-const btnZurueck = document.getElementById("btn-zurueck");
-const btnDeckLoeschen = document.getElementById("btn-deck-loeschen");
 const deckTitelAnzeige = document.getElementById("deck-titel-anzeige");
+const themenListe = document.getElementById("themen-liste");
 
 const card = document.getElementById("card");
 const cardInner = document.getElementById("card-inner");
@@ -124,7 +137,7 @@ const btnNeustart = document.getElementById("btn-neustart");
 const modusHinweis = document.getElementById("modus-hinweis");
 
 const progressText = document.getElementById("progress-text");
-const progressDetails = document.getElementById("progress-details");
+const progressProzent = document.getElementById("progress-prozent");
 const progressFill = document.getElementById("progress-fill");
 
 const lernBereich = document.querySelector(".card");
@@ -135,13 +148,56 @@ const fertigTitel = document.getElementById("fertig-titel");
 const fertigStatistik = document.getElementById("fertig-statistik");
 const keineKartenNachricht = document.getElementById("keine-karten-nachricht");
 
-const btnToggleVerwaltung = document.getElementById("btn-toggle-verwaltung");
-const verwaltungInhalt = document.getElementById("verwaltung-inhalt");
-const karteForm = document.getElementById("karte-form");
-const inputFrage = document.getElementById("input-frage");
-const inputAntwort = document.getElementById("input-antwort");
-const kartenListe = document.getElementById("karten-liste");
-const anzahlKartenSpan = document.getElementById("anzahl-karten");
+// ============================================================
+// GLOBALE NAVIGATION (Kopfleiste, auf allen Ansichten gleich)
+// ============================================================
+
+// Markiert den passenden Nav-Punkt als "aktiv" (weiße Pille, siehe CSS)
+function setzeAktivenNavPunkt(punkt) {
+  [navHome, navLernen, navFortschritt].forEach((btn) => btn.classList.remove("aktiv"));
+  if (punkt === "home") navHome.classList.add("aktiv");
+  else if (punkt === "lernen") navLernen.classList.add("aktiv");
+  else if (punkt === "fortschritt") navFortschritt.classList.add("aktiv");
+}
+
+// Wechselt zur Dashboard-Ansicht, egal von welcher Ansicht aus man kommt.
+// Das zuletzt geöffnete Deck (aktuellesDeckId) wird bewusst NICHT zurückgesetzt,
+// damit man über den "Lernen"-Nav-Punkt genau dort weitermachen kann, wo man
+// aufgehört hat (siehe navLernen weiter unten).
+function zeigeDashboard() {
+  viewLernmodus.classList.add("hidden");
+  viewStatistik.classList.add("hidden");
+  viewDashboard.classList.remove("hidden");
+  renderDashboard();
+  setzeAktivenNavPunkt("home");
+}
+
+navHome.addEventListener("click", zeigeDashboard);
+
+// "Lernen": zeigt die zuletzt geöffnete Session wieder an, falls gerade eine
+// läuft. Ist gerade kein Deck geöffnet, gibt es nichts zu zeigen -> Dashboard.
+navLernen.addEventListener("click", () => {
+  if (aktuellesDeckId === null) {
+    zeigeDashboard();
+    return;
+  }
+  viewDashboard.classList.add("hidden");
+  viewStatistik.classList.add("hidden");
+  viewLernmodus.classList.remove("hidden");
+  setzeAktivenNavPunkt("lernen");
+});
+
+// "Fortschritt": zeigt vorerst die bestehende Statistik-Seite (die eigene
+// "Fortschritt"-Seite aus dem Referenzbild bauen wir später).
+navFortschritt.addEventListener("click", () => {
+  renderStatistik();
+  viewDashboard.classList.add("hidden");
+  viewLernmodus.classList.add("hidden");
+  viewStatistik.classList.remove("hidden");
+  setzeAktivenNavPunkt("fortschritt");
+});
+
+btnStatistikZurueck.addEventListener("click", zeigeDashboard);
 
 // ============================================================
 // ANSICHT 1: DASHBOARD
@@ -344,18 +400,6 @@ function renderStatistik() {
   });
 }
 
-// Wechselt vom Dashboard in die Statistik-Ansicht (und zurück)
-btnZeigeStatistik.addEventListener("click", () => {
-  renderStatistik();
-  viewDashboard.classList.add("hidden");
-  viewStatistik.classList.remove("hidden");
-});
-
-btnStatistikZurueck.addEventListener("click", () => {
-  viewStatistik.classList.add("hidden");
-  viewDashboard.classList.remove("hidden");
-});
-
 // ============================================================
 // ANSICHT 2: LERNMODUS
 // ============================================================
@@ -363,6 +407,44 @@ btnStatistikZurueck.addEventListener("click", () => {
 // Gibt alle aktuellen Fehlerkarten eines Decks zurück
 function fehlerkartenDesDecks(deck) {
   return deck.karten.filter((k) => k.istFehlerkarte);
+}
+
+// Baut die Themen-Liste in der rechten Spalte des Lernmodus neu auf:
+// alle Decks als klickbare Zeile (führt in deren normalen Lernmodus),
+// das aktuell geöffnete Deck wird optisch hervorgehoben.
+function renderThemenListe() {
+  themenListe.innerHTML = "";
+
+  decks.forEach((deck, index) => {
+    const gesamt = deck.karten.length;
+    const optik = DECK_OPTIK[index % DECK_OPTIK.length];
+
+    const zeile = document.createElement("button");
+    zeile.className = "deck-zeile themen-zeile";
+    if (deck.id === aktuellesDeckId) zeile.classList.add("aktiv");
+    zeile.addEventListener("click", () => oeffneDeck(deck.id, "normal"));
+
+    const icon = document.createElement("div");
+    icon.className = "deck-icon";
+    icon.style.backgroundColor = optik.farbe;
+    icon.textContent = optik.icon;
+
+    const info = document.createElement("div");
+    info.className = "deck-info";
+
+    const titel = document.createElement("h3");
+    titel.textContent = deck.titel;
+
+    const details = document.createElement("p");
+    details.textContent = `${gesamt} Karte${gesamt === 1 ? "" : "n"}`;
+
+    info.appendChild(titel);
+    info.appendChild(details);
+
+    zeile.appendChild(icon);
+    zeile.appendChild(info);
+    themenListe.appendChild(zeile);
+  });
 }
 
 // Wechselt von der Dashboard-Ansicht in den Lernmodus für ein bestimmtes Deck.
@@ -375,6 +457,8 @@ function oeffneDeck(deckId, modus) {
 
   sessionRichtigKlicks = 0;
   sessionFalschKlicks = 0;
+  sessionGekonntIds = new Set();
+  sessionFalschIds = new Set();
 
   deckTitelAnzeige.textContent = deck.titel;
 
@@ -387,35 +471,16 @@ function oeffneDeck(deckId, modus) {
     modusHinweis.classList.add("hidden");
   }
 
-  renderKartenListe();
+  sessionGesamt = queue.length;
+
+  renderThemenListe();
   starteAnzeige();
 
   viewDashboard.classList.add("hidden");
+  viewStatistik.classList.add("hidden");
   viewLernmodus.classList.remove("hidden");
+  setzeAktivenNavPunkt("lernen");
 }
-
-// Zurück zum Dashboard (Fortschritt dort ist inzwischen aktuell, da wir immer sofort speichern)
-btnZurueck.addEventListener("click", () => {
-  viewLernmodus.classList.add("hidden");
-  viewDashboard.classList.remove("hidden");
-  aktuellesDeckId = null;
-  renderDashboard();
-});
-
-// Aktuelles Deck löschen (mit Rückfrage, da nicht rückgängig machbar)
-btnDeckLoeschen.addEventListener("click", () => {
-  const deck = aktuellesDeck();
-  const bestaetigt = confirm(`Deck "${deck.titel}" wirklich löschen? Das kann nicht rückgängig gemacht werden.`);
-  if (!bestaetigt) return;
-
-  decks = decks.filter((d) => d.id !== aktuellesDeckId);
-  speichereDecks();
-
-  viewLernmodus.classList.add("hidden");
-  viewDashboard.classList.remove("hidden");
-  aktuellesDeckId = null;
-  renderDashboard();
-});
 
 // ---- Lernmodus: Anzeige-Zustände ----
 
@@ -469,6 +534,27 @@ function zeigeAktuelleKarte() {
   antwortText.textContent = aktuelleKarte.antwort;
 }
 
+// Aktualisiert den Fortschritts-Ring DIESER Session rechts im Lernmodus
+// (siehe Kommentar bei den Session-Variablen oben für die Kategorien-Logik).
+function aktualisiereSessionFortschritt() {
+  const gekonnt = sessionGekonntIds.size;
+  const ueben = sessionFalschIds.size;
+  const offen = Math.max(sessionGesamt - gekonnt - ueben, 0);
+
+  const prozent = sessionGesamt === 0 ? 0 : Math.round((gekonnt / sessionGesamt) * 100);
+
+  document.getElementById("session-prozent").textContent = prozent + "%";
+  document.getElementById("session-kannich").textContent = gekonnt;
+  document.getElementById("session-uebem").textContent = ueben;
+  document.getElementById("session-offen").textContent = offen;
+
+  const ring = document.getElementById("session-ring");
+  const gekonntGrad = sessionGesamt === 0 ? 0 : (gekonnt / sessionGesamt) * 360;
+  const uebenGrad = sessionGesamt === 0 ? 0 : (ueben / sessionGesamt) * 360;
+  const uebenEnde = gekonntGrad + uebenGrad;
+  ring.style.background = `conic-gradient(var(--farbe-gruen) ${gekonntGrad}deg, var(--farbe-rot) ${gekonntGrad}deg ${uebenEnde}deg, #d7dde1 ${uebenEnde}deg)`;
+}
+
 // Aktualisiert Text und Balken der Fortschrittsanzeige im Lernmodus.
 // Im Fehlerkarten-Modus zeigen wir statt "Karte X von Y" den einfachen
 // Hinweis "Noch X Fehlerkarten", wie gewünscht.
@@ -483,19 +569,20 @@ function aktualisiereFortschritt() {
         : Math.round(((sessionFehlerkartenGesamt - nochOffen) / sessionFehlerkartenGesamt) * 100);
 
     progressText.textContent = `Noch ${nochOffen} Fehlerkarte${nochOffen === 1 ? "" : "n"}`;
-    progressDetails.textContent = "";
+    progressProzent.textContent = prozent + "%";
     progressFill.style.width = prozent + "%";
+    aktualisiereSessionFortschritt();
     return;
   }
 
   const gesamt = deck.karten.length;
   const gekonnt = deck.karten.filter((k) => k.gekonnt).length;
-  const nochOffen = queue.length;
   const prozent = gesamt === 0 ? 0 : Math.round((gekonnt / gesamt) * 100);
 
   progressText.textContent = `Karte ${Math.min(gekonnt + 1, gesamt)} von ${gesamt}`;
-  progressDetails.textContent = `Kann ich: ${gekonnt} | Noch offen: ${nochOffen}`;
+  progressProzent.textContent = prozent + "%";
   progressFill.style.width = prozent + "%";
+  aktualisiereSessionFortschritt();
 }
 
 // Legt anhand der aktuellen Kartenliste fest, was angezeigt wird
@@ -548,7 +635,6 @@ function wennFertigOderNaechsteKarte() {
     zeigeZustand("lernen");
   }
   aktualisiereFortschritt();
-  renderKartenListe(); // Karten-Liste im Verwaltungsbereich kann sich mitändern (z. B. Anzahl)
 }
 
 // Klick auf die Karte dreht sie um
@@ -570,6 +656,8 @@ btnGewusst.addEventListener("click", () => {
   }
 
   sessionRichtigKlicks++;
+  sessionGekonntIds.add(karte.id);
+  sessionFalschIds.delete(karte.id);
   speichereDecks();
   wennFertigOderNaechsteKarte();
 });
@@ -583,6 +671,7 @@ btnNichtGewusst.addEventListener("click", () => {
   karte.zuletztGelernt = new Date().toISOString();
 
   sessionFalschKlicks++;
+  sessionFalschIds.add(karte.id);
   queue.push(karte);
   speichereDecks();
   wennFertigOderNaechsteKarte();
@@ -597,83 +686,11 @@ btnNeustart.addEventListener("click", () => {
 
   sessionRichtigKlicks = 0;
   sessionFalschKlicks = 0;
+  sessionGekonntIds = new Set();
+  sessionFalschIds = new Set();
+  sessionGesamt = queue.length;
   starteAnzeige();
 });
-
-// ============================================================
-// KARTENVERWALTUNG (innerhalb des aktuell geöffneten Decks)
-// ============================================================
-
-btnToggleVerwaltung.addEventListener("click", () => {
-  verwaltungInhalt.classList.toggle("hidden");
-});
-
-// Baut die Liste der vorhandenen Karten im Verwaltungsbereich neu auf
-function renderKartenListe() {
-  const deck = aktuellesDeck();
-  kartenListe.innerHTML = "";
-  anzahlKartenSpan.textContent = deck.karten.length;
-
-  deck.karten.forEach((karte) => {
-    const li = document.createElement("li");
-
-    const textSpan = document.createElement("span");
-    textSpan.className = "karte-text";
-    textSpan.textContent = `${karte.frage} → ${karte.antwort}`;
-
-    const loeschButton = document.createElement("button");
-    loeschButton.className = "btn-delete";
-    loeschButton.textContent = "✗ Löschen";
-    loeschButton.addEventListener("click", () => loescheKarte(karte.id));
-
-    li.appendChild(textSpan);
-    li.appendChild(loeschButton);
-    kartenListe.appendChild(li);
-  });
-}
-
-// Neue Karte über das Formular hinzufügen
-karteForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  const neueKarte = {
-    id: Date.now(),
-    frage: inputFrage.value.trim(),
-    antwort: inputAntwort.value.trim(),
-    gekonnt: false,
-    falschAnzahl: 0,
-    richtigAnzahl: 0,
-    istFehlerkarte: false,
-    zuletztGelernt: null
-  };
-
-  if (neueKarte.frage === "" || neueKarte.antwort === "") return;
-
-  const deck = aktuellesDeck();
-  deck.karten.push(neueKarte);
-  speichereDecks();
-
-  // Eine neue Karte ist noch nie falsch beantwortet worden, gehört also nur in
-  // den normalen Durchlauf, nicht automatisch in einen laufenden Fehlerkarten-Durchlauf.
-  if (aktuellerLernModus === "normal") {
-    queue.push(neueKarte);
-  }
-  wennFertigOderNaechsteKarte();
-
-  karteForm.reset();
-  inputFrage.focus();
-});
-
-// Karte löschen (per ID)
-function loescheKarte(id) {
-  const deck = aktuellesDeck();
-  deck.karten = deck.karten.filter((k) => k.id !== id);
-  queue = queue.filter((k) => k.id !== id);
-
-  speichereDecks();
-  renderKartenListe();
-  starteAnzeige();
-}
 
 // ---- Start: Dashboard anzeigen ----
 renderDashboard();

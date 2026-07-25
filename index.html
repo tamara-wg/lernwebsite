@@ -11,20 +11,31 @@
   <!-- Rein dekorative Hintergrund-Elemente (aus dem Referenzbild ausgemessen).
        aria-hidden, da sie keinen Inhalt tragen und für Screenreader irrelevant sind. -->
   <div class="deko-hintergrund" aria-hidden="true">
-    <span class="deko-blob deko-blob-links"></span>
-    <span class="deko-blob deko-blob-rechts"></span>
     <span class="deko-raute"></span>
     <span class="deko-punkte"></span>
+    <img src="images/deko-vektor.svg" alt="" class="deko-vektor">
+    <img src="images/deko-vektor-2.svg" alt="" class="deko-vektor-2">
+    <img src="images/deko-vektor-3.svg" alt="" class="deko-vektor-3">
   </div>
 
-  <!-- Kopfleiste mit Logo und Titel -->
-  <header class="app-header">
-    <div class="app-logo">📚</div>
-    <div class="app-titel-block">
-      <h1>Karteikarten lernen</h1>
-      <p class="app-untertitel">dein persönlicher Lernbegleiter</p>
+  <!-- Globale Navigationsleiste: erscheint auf allen Ansichten gleich und
+       übernimmt das Wechseln zwischen den Seiten (ersetzt die einzelnen
+       "Zurück"-Buttons, die es vorher pro Ansicht gab). -->
+  <header class="site-nav">
+    <div class="site-nav-marke">
+      <div class="site-nav-logo">📚</div>
+      <div class="site-nav-titel-block">
+        <h1>lernen oder weinen</h1>
+        <p class="site-nav-untertitel">weil klausuren eh kommen</p>
+      </div>
     </div>
-    <button id="btn-zeige-statistik" class="btn btn-toggle">📊 Statistik</button>
+
+    <nav class="site-nav-pillen">
+      <button id="nav-home" class="nav-pille">🏠 Home</button>
+      <button id="nav-lernen" class="nav-pille">📇 Lernen</button>
+      <button id="nav-karten" class="nav-pille" disabled title="Kommt bald">🗂 Karten</button>
+      <button id="nav-fortschritt" class="nav-pille">📈 Fortschritt</button>
+    </nav>
   </header>
 
   <!-- ================= ANSICHT 1: DASHBOARD ================= -->
@@ -67,94 +78,102 @@
   </div>
 
   <!-- ================= ANSICHT 2: LERNMODUS (für ein ausgewähltes Deck) ================= -->
-  <!-- Erstmal versteckt, wird erst sichtbar, wenn man auf ein Deck klickt -->
+  <!-- Erstmal versteckt, wird erst sichtbar, wenn man auf ein Deck klickt.
+       Reine Lernseite: Karten verwalten/Deck löschen gibt es hier bewusst
+       nicht mehr, das zieht später in eine eigene "Karten"-Seite um. -->
   <div id="view-lernmodus" class="hidden">
+    <div class="lernmodus-layout">
 
-    <div class="lernmodus-kopf">
-      <button id="btn-zurueck" class="btn btn-toggle">← Zurück zum Dashboard</button>
-      <button id="btn-deck-loeschen" class="btn-delete">🗑 Deck löschen</button>
-    </div>
+      <!-- Hauptbereich: Karte + Bewertung -->
+      <div class="lernmodus-haupt">
+        <h2 id="deck-titel-anzeige">Deckname</h2>
 
-    <h2 id="deck-titel-anzeige">Deckname</h2>
+        <!-- Zeigt an, wenn man sich gerade im Fehlerkarten-Modus befindet (statt im normalen Lernmodus) -->
+        <p id="modus-hinweis" class="hidden">🔥 Fehlerkarten-Modus</p>
 
-    <!-- Zeigt an, wenn man sich gerade im Fehlerkarten-Modus befindet (statt im normalen Lernmodus) -->
-    <p id="modus-hinweis" class="hidden">🔥 Fehlerkarten-Modus</p>
-
-    <!-- Fortschrittsanzeige -->
-    <div class="progress-info">
-      <p id="progress-text">Karte 1 von 5</p>
-      <p id="progress-details">Kann ich: 0 &nbsp;|&nbsp; Noch offen: 5</p>
-      <div class="progress-bar">
-        <div id="progress-fill" class="progress-fill"></div>
-      </div>
-    </div>
-
-    <!-- Die Karte -->
-    <div class="card" id="card">
-      <div class="card-inner" id="card-inner">
-        <div class="card-front">
-          <span class="label">Frage</span>
-          <p class="text" id="frage-text">Frage</p>
+        <!-- Fortschrittsanzeige -->
+        <div class="progress-info">
+          <p class="progress-label">Lern Session</p>
+          <div class="progress-kopf">
+            <p id="progress-text">Karte 1 von 5</p>
+            <p id="progress-prozent">0%</p>
+          </div>
+          <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill"></div>
+          </div>
         </div>
-        <div class="card-back">
-          <span class="label">Antwort</span>
-          <p class="text" id="antwort-text">Antwort</p>
+
+        <!-- Die Karte -->
+        <div class="card" id="card">
+          <div class="card-inner" id="card-inner">
+            <div class="card-front">
+              <span class="label">Frage</span>
+              <p class="text" id="frage-text">Frage</p>
+            </div>
+            <div class="card-back">
+              <span class="label">Antwort</span>
+              <p class="text" id="antwort-text">Antwort</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="hint">Klicke auf die Karte, um sie umzudrehen</p>
+
+        <div class="buttons">
+          <button id="btn-nicht-gewusst" class="btn-antwort btn-antwort-rot">
+            <span class="btn-antwort-icon">✕</span>
+            <span class="btn-antwort-text">
+              <span class="btn-titel">Nicht gewusst</span>
+              <span class="btn-sub">muss ich üben</span>
+            </span>
+          </button>
+          <button id="btn-gewusst" class="btn-antwort btn-antwort-gruen">
+            <span class="btn-antwort-icon">→</span>
+            <span class="btn-antwort-text">
+              <span class="btn-titel">Gewusst</span>
+              <span class="btn-sub">kann ich</span>
+            </span>
+          </button>
+        </div>
+
+        <div id="fertig-nachricht" class="hidden">
+          <h2 id="fertig-titel">🎉 Geschafft! Du kannst alle Karten dieses Decks.</h2>
+          <p id="fertig-statistik"></p>
+          <button id="btn-neustart" class="btn btn-restart">↻ Nochmal von vorne</button>
+        </div>
+
+        <div id="keine-karten-nachricht" class="hidden">
+          <p>Noch keine Karten in diesem Deck.</p>
         </div>
       </div>
-    </div>
 
-    <p class="hint">Klicke auf die Karte, um sie umzudrehen</p>
+      <!-- Seitenspalte: Fortschritt DIESER Session + Themenliste -->
+      <div class="lernmodus-seite">
+        <div class="fortschritt-panel">
+          <h3>Dein Fortschritt</h3>
+          <div class="fortschritt-ring" id="session-ring">
+            <span id="session-prozent">0%</span>
+          </div>
+          <ul class="fortschritt-legende">
+            <li><span class="punkt punkt-gruen"></span> Kann ich <b id="session-kannich">0</b></li>
+            <li><span class="punkt punkt-rot"></span> Muss ich üben <b id="session-uebem">0</b></li>
+            <li><span class="punkt punkt-grau"></span> Offen <b id="session-offen">0</b></li>
+          </ul>
+        </div>
 
-    <div class="buttons">
-      <button id="btn-nicht-gewusst" class="btn-antwort btn-antwort-rot">
-        <span class="btn-antwort-icon">✕</span>
-        <span class="btn-antwort-text">
-          <span class="btn-titel">Nicht gewusst</span>
-          <span class="btn-sub">muss ich üben</span>
-        </span>
-      </button>
-      <button id="btn-gewusst" class="btn-antwort btn-antwort-gruen">
-        <span class="btn-antwort-icon">→</span>
-        <span class="btn-antwort-text">
-          <span class="btn-titel">Gewusst</span>
-          <span class="btn-sub">kann ich</span>
-        </span>
-      </button>
-    </div>
-
-    <div id="fertig-nachricht" class="hidden">
-      <h2 id="fertig-titel">🎉 Geschafft! Du kannst alle Karten dieses Decks.</h2>
-      <p id="fertig-statistik"></p>
-      <button id="btn-neustart" class="btn btn-restart">↻ Nochmal von vorne</button>
-    </div>
-
-    <div id="keine-karten-nachricht" class="hidden">
-      <p>Noch keine Karten in diesem Deck. Füge unten welche hinzu ⬇️</p>
-    </div>
-
-    <hr class="trenner">
-
-    <!-- Kartenverwaltung für das aktuell geöffnete Deck -->
-    <div class="verwaltung">
-      <button id="btn-toggle-verwaltung" class="btn btn-toggle">📋 Karten verwalten</button>
-
-      <div id="verwaltung-inhalt" class="hidden">
-        <h3>Neue Karte hinzufügen</h3>
-        <form id="karte-form">
-          <input type="text" id="input-frage" placeholder="Frage" required>
-          <input type="text" id="input-antwort" placeholder="Antwort" required>
-          <button type="submit" class="btn btn-green">+ Hinzufügen</button>
-        </form>
-
-        <h3>Vorhandene Karten (<span id="anzahl-karten">0</span>)</h3>
-        <ul id="karten-liste"></ul>
+        <div class="fortschritt-panel">
+          <h3>Themen</h3>
+          <div class="deck-liste" id="themen-liste">
+            <!-- Themen-Zeilen werden hier per JavaScript eingefügt -->
+          </div>
+        </div>
       </div>
-    </div>
 
+    </div>
   </div>
 
   <!-- ================= ANSICHT 3: STATISTIK ================= -->
-  <!-- Erstmal versteckt, wird erst sichtbar über den "Statistik"-Button oben -->
+  <!-- Erstmal versteckt, wird erst sichtbar über den "Fortschritt"-Nav-Punkt oben -->
   <div id="view-statistik" class="hidden">
 
     <div class="lernmodus-kopf statistik-breite">
