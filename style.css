@@ -16,7 +16,7 @@
 
   --farbe-text: #1f2933;
   --farbe-text-hell: #7b8794;
-  --farbe-hintergrund: #f2f6f5;
+  --farbe-hintergrund: #f9fafe;
   --farbe-karte: #ffffff;
 
   --radius-gross: 20px;
@@ -43,6 +43,62 @@ h1, h2, h3 {
 
 .hidden {
   display: none;
+}
+
+/* ==========================================================
+   Dekorative Hintergrund-Elemente (aus dem Referenzbild ausgemessen).
+   Fest am Bildschirmrand verankert ("position: fixed"), liegen hinter
+   allem anderen Inhalt und reagieren nicht auf Klicks.
+   ========================================================== */
+.deko-hintergrund {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.deko-blob {
+  position: fixed;
+  border-radius: 50%;
+}
+
+.deko-blob-links {
+  left: -70px;
+  bottom: -70px;
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, rgb(132, 188, 240) 0%, rgba(132, 188, 240, 0) 70%);
+}
+
+.deko-blob-rechts {
+  right: -60px;
+  bottom: -60px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgb(149, 201, 245) 0%, rgba(149, 201, 245, 0) 70%);
+}
+
+.deko-raute {
+  position: fixed;
+  left: 10px;
+  top: 38vh;
+  width: 12px;
+  height: 12px;
+  background-color: rgb(57, 141, 232);
+  transform: rotate(45deg);
+  border-radius: 3px;
+}
+
+.deko-punkte {
+  position: fixed;
+  right: 0;
+  top: 66vh;
+  width: 60px;
+  height: 110px;
+  background-image: radial-gradient(rgb(100, 170, 240) 1.6px, transparent 1.8px);
+  background-size: 14px 14px;
+  opacity: 0.6;
 }
 
 /* ---- Kopfleiste ---- */
