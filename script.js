@@ -12,6 +12,7 @@ function erzeugeStandardDecks() {
     {
       id: 1,
       titel: "Hauptstädte",
+      statistik: { durchlaeufeAbgeschlossen: 0, verlauf: [] },
       karten: [
         { id: 1, frage: "Was ist die Hauptstadt von Frankreich?", antwort: "Paris", gekonnt: false, falschAnzahl: 0, richtigAnzahl: 0, istFehlerkarte: false, zuletztGelernt: null },
         { id: 2, frage: "Was ist die Hauptstadt von Italien?", antwort: "Rom", gekonnt: false, falschAnzahl: 0, richtigAnzahl: 0, istFehlerkarte: false, zuletztGelernt: null },
@@ -39,13 +40,24 @@ function ergaenzeLernfelder(decks) {
   return decks;
 }
 
+// Stellt sicher, dass jedes Deck ein "statistik"-Feld besitzt, auch wenn es
+// aus einer älteren Version gespeichert wurde, die das noch nicht kannte.
+function ergaenzeDeckStatistik(decks) {
+  decks.forEach((deck) => {
+    if (!deck.statistik) {
+      deck.statistik = { durchlaeufeAbgeschlossen: 0, verlauf: [] };
+    }
+  });
+  return decks;
+}
+
 // Lädt die Decks aus dem Local Storage. Falls es noch die alte, einfache
 // Speicherform (ein einzelnes Deck ohne "gekonnt"-Status) gibt, wird sie
 // einmalig in das neue Format überführt.
 function ladeDecks() {
   const gespeichert = localStorage.getItem(SPEICHER_SCHLUESSEL);
   if (gespeichert) {
-    return ergaenzeLernfelder(JSON.parse(gespeichert));
+    return ergaenzeDeckStatistik(ergaenzeLernfelder(JSON.parse(gespeichert)));
   }
 
   const altesDeck = localStorage.getItem(ALTER_SPEICHER_SCHLUESSEL);
@@ -59,7 +71,7 @@ function ladeDecks() {
       zuletztGelernt: null
     }));
     localStorage.removeItem(ALTER_SPEICHER_SCHLUESSEL);
-    return [{ id: 1, titel: "Hauptstädte", karten }];
+    return [{ id: 1, titel: "Hauptstädte", statistik: { durchlaeufeAbgeschlossen: 0, verlauf: [] }, karten }];
   }
 
   return erzeugeStandardDecks();
@@ -86,6 +98,11 @@ function aktuellesDeck() {
 // ---- HTML-Elemente holen ----
 const viewDashboard = document.getElementById("view-dashboard");
 const viewLernmodus = document.getElementById("view-lernmodus");
+const viewStatistik = document.getElementById("view-statistik");
+
+const btnZeigeStatistik = document.getElementById("btn-zeige-statistik");
+const btnStatistikZurueck = document.getElementById("btn-statistik-zurueck");
+const statistikListe = document.getElementById("statistik-liste");
 
 const deckListe = document.getElementById("deck-liste");
 const btnToggleNeuesDeck = document.getElementById("btn-toggle-neues-deck");
@@ -199,26 +216,48 @@ function renderDashboard() {
 
 // Berechnet den Fortschritt über ALLE Decks hinweg und zeigt ihn im Ring
 // plus der kleinen Liste daneben an (rein darstellend, verändert keine Daten).
+//
+// Jede Karte wird für den Ring genau EINER der drei Kategorien zugeordnet
+// (nie überlappend, damit die Prozente im Ring immer 100 % ergeben):
+//   1. "Offen"        = noch nie gelernt (zuletztGelernt ist null)
+//   2. "Muss ich üben" = aktuell eine Fehlerkarte (auch wenn sie zwischendurch
+//                        schon mal im normalen Modus als "gekonnt" markiert wurde -
+//                        sie gilt erst als gemeistert, wenn sie auch im
+//                        Fehlerkarten-Durchlauf richtig beantwortet wurde)
+//   3. "Kann ich"     = gelernt, aktuell keine Fehlerkarte
 function aktualisiereGesamtFortschritt() {
   let gesamtAlleDecks = 0;
   let gekonntAlleDecks = 0;
+  let uebenAlleDecks = 0;
+  let offenAlleDecks = 0;
 
   decks.forEach((deck) => {
-    gesamtAlleDecks += deck.karten.length;
-    gekonntAlleDecks += deck.karten.filter((k) => k.gekonnt).length;
+    deck.karten.forEach((karte) => {
+      gesamtAlleDecks++;
+      if (karte.zuletztGelernt === null) {
+        offenAlleDecks++;
+      } else if (karte.istFehlerkarte) {
+        uebenAlleDecks++;
+      } else if (karte.gekonnt) {
+        gekonntAlleDecks++;
+      }
+    });
   });
 
-  const uebenAlleDecks = gesamtAlleDecks - gekonntAlleDecks;
   const prozent = gesamtAlleDecks === 0 ? 0 : Math.round((gekonntAlleDecks / gesamtAlleDecks) * 100);
 
   document.getElementById("fortschritt-prozent").textContent = prozent + "%";
   document.getElementById("stat-kannich").textContent = gekonntAlleDecks;
   document.getElementById("stat-uebem").textContent = uebenAlleDecks;
-  document.getElementById("stat-gesamt").textContent = gesamtAlleDecks;
+  document.getElementById("stat-offen").textContent = offenAlleDecks;
 
+  // Ring als drei aneinandergereihte Kreisabschnitte: grün (kann ich),
+  // rot (muss ich üben) und grau (offen) - Farben passend zu den Punkten in der Legende.
   const ring = document.getElementById("fortschritt-ring");
-  const winkel = (prozent / 100) * 360;
-  ring.style.background = `conic-gradient(var(--farbe-primaer) ${winkel}deg, var(--farbe-primaer-hell) ${winkel}deg)`;
+  const gekonntGrad = gesamtAlleDecks === 0 ? 0 : (gekonntAlleDecks / gesamtAlleDecks) * 360;
+  const uebenGrad = gesamtAlleDecks === 0 ? 0 : (uebenAlleDecks / gesamtAlleDecks) * 360;
+  const uebenEnde = gekonntGrad + uebenGrad;
+  ring.style.background = `conic-gradient(var(--farbe-gruen) ${gekonntGrad}deg, var(--farbe-rot) ${gekonntGrad}deg ${uebenEnde}deg, #d7dde1 ${uebenEnde}deg)`;
 }
 
 // Auf-/Zuklappen des "Neues Deck erstellen"-Formulars
@@ -233,13 +272,88 @@ deckForm.addEventListener("submit", (event) => {
   const titel = inputDeckTitel.value.trim();
   if (titel === "") return;
 
-  const neuesDeck = { id: Date.now(), titel, karten: [] };
+  const neuesDeck = { id: Date.now(), titel, statistik: { durchlaeufeAbgeschlossen: 0, verlauf: [] }, karten: [] };
   decks.push(neuesDeck);
   speichereDecks();
   renderDashboard();
 
   deckForm.reset();
   deckForm.classList.add("hidden");
+});
+
+// ============================================================
+// ANSICHT 3: STATISTIK
+// ============================================================
+
+// Baut die Statistik-Liste neu auf: pro Deck die Erfolgsquote (wie viele
+// Karten aktuell "kann ich" sind), die Anzahl abgeschlossener Durchläufe
+// und - falls vorhanden - einen kleinen Verlauf der letzten Durchläufe.
+function renderStatistik() {
+  statistikListe.innerHTML = "";
+
+  if (decks.length === 0) {
+    statistikListe.innerHTML = "<p>Noch keine Decks vorhanden.</p>";
+    return;
+  }
+
+  decks.forEach((deck, index) => {
+    const gesamt = deck.karten.length;
+    const gekonnt = deck.karten.filter((k) => k.gekonnt).length;
+    const erfolgsquote = gesamt === 0 ? 0 : Math.round((gekonnt / gesamt) * 100);
+    const optik = DECK_OPTIK[index % DECK_OPTIK.length];
+
+    const zeile = document.createElement("div");
+    zeile.className = "deck-zeile statistik-zeile";
+
+    const icon = document.createElement("div");
+    icon.className = "deck-icon";
+    icon.style.backgroundColor = optik.farbe;
+    icon.textContent = optik.icon;
+
+    const info = document.createElement("div");
+    info.className = "deck-info";
+
+    const titel = document.createElement("h3");
+    titel.textContent = deck.titel;
+
+    const details = document.createElement("p");
+    details.textContent = `Kann ich: ${gekonnt}/${gesamt} (${erfolgsquote} %) · Abgeschlossene Durchläufe: ${deck.statistik.durchlaeufeAbgeschlossen}`;
+
+    info.appendChild(titel);
+    info.appendChild(details);
+
+    if (deck.statistik.verlauf.length > 0) {
+      const verlaufText = deck.statistik.verlauf
+        .slice()
+        .reverse()
+        .map((eintrag) => {
+          const datumText = new Date(eintrag.datum).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" });
+          return `${datumText}: ${eintrag.prozentRichtig} %`;
+        })
+        .join(" · ");
+
+      const verlaufAbsatz = document.createElement("p");
+      verlaufAbsatz.className = "statistik-verlauf";
+      verlaufAbsatz.textContent = `Verlauf: ${verlaufText}`;
+      info.appendChild(verlaufAbsatz);
+    }
+
+    zeile.appendChild(icon);
+    zeile.appendChild(info);
+    statistikListe.appendChild(zeile);
+  });
+}
+
+// Wechselt vom Dashboard in die Statistik-Ansicht (und zurück)
+btnZeigeStatistik.addEventListener("click", () => {
+  renderStatistik();
+  viewDashboard.classList.add("hidden");
+  viewStatistik.classList.remove("hidden");
+});
+
+btnStatistikZurueck.addEventListener("click", () => {
+  viewStatistik.classList.add("hidden");
+  viewDashboard.classList.remove("hidden");
 });
 
 // ============================================================
@@ -398,10 +512,36 @@ function starteAnzeige() {
   aktualisiereFortschritt();
 }
 
+// Merkt sich einen abgeschlossenen normalen Durchlauf dauerhaft (für die
+// Statistik-Ansicht): Anzahl der Durchläufe hoch, Erfolgsquote in den Verlauf.
+// Nur normale Durchläufe zählen (kein Fehlerkarten-Durchlauf) und nur, wenn
+// währenddessen wirklich etwas bewertet wurde (nicht bei einem schon leeren
+// oder bereits komplett gekonnten Deck).
+function speichereDurchlaufErgebnis() {
+  const gesamtKlicks = sessionRichtigKlicks + sessionFalschKlicks;
+  if (gesamtKlicks === 0) return;
+
+  const deck = aktuellesDeck();
+  const prozentRichtig = Math.round((sessionRichtigKlicks / gesamtKlicks) * 100);
+
+  deck.statistik.durchlaeufeAbgeschlossen++;
+  deck.statistik.verlauf.push({ datum: new Date().toISOString(), prozentRichtig });
+
+  // Nur die letzten 10 Durchläufe merken - das reicht für einen einfachen Verlauf.
+  if (deck.statistik.verlauf.length > 10) {
+    deck.statistik.verlauf.shift();
+  }
+
+  speichereDecks();
+}
+
 // Prüft nach jeder Bewertung, ob der Durchlauf zu Ende ist,
 // und zeigt sonst die nächste Karte + aktualisierten Fortschritt
 function wennFertigOderNaechsteKarte() {
   if (queue.length === 0) {
+    if (aktuellerLernModus === "normal") {
+      speichereDurchlaufErgebnis();
+    }
     zeigeZustand("fertig");
   } else {
     zeigeAktuelleKarte();

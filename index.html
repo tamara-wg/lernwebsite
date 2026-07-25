@@ -24,6 +24,7 @@
       <h1>Karteikarten lernen</h1>
       <p class="app-untertitel">dein persönlicher Lernbegleiter</p>
     </div>
+    <button id="btn-zeige-statistik" class="btn btn-toggle">📊 Statistik</button>
   </header>
 
   <!-- ================= ANSICHT 1: DASHBOARD ================= -->
@@ -57,7 +58,7 @@
           <ul class="fortschritt-legende">
             <li><span class="punkt punkt-gruen"></span> Kann ich <b id="stat-kannich">0</b></li>
             <li><span class="punkt punkt-rot"></span> Muss ich üben <b id="stat-uebem">0</b></li>
-            <li><span class="punkt punkt-grau"></span> Gesamt <b id="stat-gesamt">0</b></li>
+            <li><span class="punkt punkt-grau"></span> Offen <b id="stat-offen">0</b></li>
           </ul>
         </div>
       </div>
@@ -147,6 +148,25 @@
 
         <h3>Vorhandene Karten (<span id="anzahl-karten">0</span>)</h3>
         <ul id="karten-liste"></ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= ANSICHT 3: STATISTIK ================= -->
+  <!-- Erstmal versteckt, wird erst sichtbar über den "Statistik"-Button oben -->
+  <div id="view-statistik" class="hidden">
+
+    <div class="lernmodus-kopf statistik-breite">
+      <button id="btn-statistik-zurueck" class="btn btn-toggle">← Zurück zum Dashboard</button>
+    </div>
+
+    <div class="statistik-breite">
+      <h2>📊 Statistik</h2>
+      <p class="bereich-titel">Übersicht pro Deck</p>
+
+      <div class="deck-liste" id="statistik-liste">
+        <!-- Statistik-Zeilen werden hier per JavaScript eingefügt -->
       </div>
     </div>
 

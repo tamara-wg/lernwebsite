@@ -16,7 +16,7 @@
 
   --farbe-text: #1f2933;
   --farbe-text-hell: #7b8794;
-  --farbe-hintergrund: #f9fafe;
+  --farbe-hintergrund: #f9fafd;
   --farbe-karte: #ffffff;
 
   --radius-gross: 20px;
@@ -301,7 +301,7 @@ h1, h2, h3 {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: conic-gradient(var(--farbe-primaer) 0deg, var(--farbe-primaer-hell) 0deg);
+  background: conic-gradient(var(--farbe-gruen) 0deg, #d7dde1 0deg);
 }
 
 .fortschritt-ring::before {
@@ -751,6 +751,38 @@ h1, h2, h3 {
 
 .btn-delete:hover {
   opacity: 0.7;
+}
+
+/* ==========================================================
+   STATISTIK
+   ========================================================== */
+
+/* Der "Statistik"-Button in der Kopfleiste soll rechts stehen,
+   statt wie .btn-toggle normalerweise volle Breite einzunehmen. */
+.app-header .btn-toggle {
+  width: auto;
+  margin-left: auto;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* Gemeinsame Breite/Zentrierung für den Kopfbereich und den Inhalt
+   der Statistik-Ansicht (etwas breiter als der Lernmodus, da hier
+   pro Deck mehr Text auf einer Zeile steht). */
+.statistik-breite {
+  max-width: 900px;
+  margin: 0 auto 15px auto;
+  text-align: left;
+}
+
+.statistik-zeile {
+  align-items: flex-start;
+}
+
+.statistik-verlauf {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: var(--farbe-text-hell);
 }
 
 /* ==========================================================
