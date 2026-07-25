@@ -67,9 +67,9 @@
             <span id="fortschritt-prozent">0%</span>
           </div>
           <ul class="fortschritt-legende">
-            <li><span class="punkt punkt-gruen"></span> Kann ich <b id="stat-kannich">0</b></li>
-            <li><span class="punkt punkt-rot"></span> Muss ich üben <b id="stat-uebem">0</b></li>
-            <li><span class="punkt punkt-grau"></span> Offen <b id="stat-offen">0</b></li>
+            <li><span class="punkt punkt-kannich"></span> Kann ich <b id="stat-kannich">0</b></li>
+            <li><span class="punkt punkt-uebem"></span> Muss ich üben <b id="stat-uebem">0</b></li>
+            <li><span class="punkt punkt-offen"></span> Offen <b id="stat-offen">0</b></li>
           </ul>
         </div>
       </div>
@@ -151,20 +151,31 @@
       <div class="lernmodus-seite">
         <div class="fortschritt-panel session-fortschritt-panel">
           <h3>Dein Fortschritt</h3>
-          <div class="fortschritt-ring" id="session-ring">
-            <span id="session-prozent">0%</span>
+          <div class="fortschritt-reihe">
+            <div class="fortschritt-ring" id="session-ring">
+              <span id="session-prozent">0%</span>
+              <small>kann ich</small>
+            </div>
+            <ul class="fortschritt-legende">
+              <li><span class="punkt punkt-kannich"></span> Kann ich <b id="session-kannich">0</b></li>
+              <li><span class="punkt punkt-uebem"></span> Muss ich üben <b id="session-uebem">0</b></li>
+              <li><span class="punkt punkt-offen"></span> Offen <b id="session-offen">0</b></li>
+            </ul>
           </div>
-          <ul class="fortschritt-legende">
-            <li><span class="punkt punkt-gruen"></span> Kann ich <b id="session-kannich">0</b></li>
-            <li><span class="punkt punkt-rot"></span> Muss ich üben <b id="session-uebem">0</b></li>
-            <li><span class="punkt punkt-grau"></span> Offen <b id="session-offen">0</b></li>
-          </ul>
+          <button type="button" class="btn-fortschritt-anzeigen" id="btn-fortschritt-anzeigen">
+            <span class="btn-fortschritt-icon" aria-hidden="true">📊</span>
+            <span>Fortschritt anzeigen</span>
+            <span class="btn-fortschritt-icon" aria-hidden="true">→</span>
+          </button>
         </div>
 
         <div class="fortschritt-panel themen-panel">
-          <h3>Themen</h3>
+          <div class="kategorien-kopf">
+            <h3>Kategorien</h3>
+            <span class="kategorien-untertitel">(Fächer die dich hassen)</span>
+          </div>
           <div class="deck-liste" id="themen-liste">
-            <!-- Themen-Zeilen werden hier per JavaScript eingefügt -->
+            <!-- Kategorie-Buttons werden hier per JavaScript eingefügt -->
           </div>
         </div>
       </div>

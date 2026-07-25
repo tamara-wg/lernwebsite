@@ -240,6 +240,13 @@ h1, h2, h3 {
   flex-wrap: wrap;
 }
 
+/* Deck-Zeilen auf der Home-Seite: gleiche Rundung wie die Kategorie-
+   Buttons im Lernmodus (Hintergrundfarbe wird per JS aus KATEGORIEN_FARBEN
+   gesetzt, reihum wie bei den Kategorie-Buttons). */
+.dashboard-zeile {
+  border-radius: 999px;
+}
+
 .deck-icon {
   width: 44px;
   height: 44px;
@@ -343,6 +350,26 @@ h1, h2, h3 {
   box-shadow: var(--schatten-fein);
 }
 
+.kategorien-kopf {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.kategorien-kopf h3 {
+  margin: 0;
+}
+
+.kategorien-untertitel {
+  font-size: 11px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--farbe-text-hell);
+}
+
 .fortschritt-panel h3 {
   margin: 0 0 18px 0;
   font-size: 13px;
@@ -412,6 +439,87 @@ h1, h2, h3 {
 .punkt-gruen { background-color: var(--farbe-gruen); }
 .punkt-rot { background-color: var(--farbe-rot); }
 .punkt-grau { background-color: #d7dde1; }
+
+/* Eigenes Farbschema nur für den Session-Fortschritt im Lernmodus
+   (Ring + Legende + Button), wie im Figma-Frame "Group 1" festgelegt -
+   bewusst andere Töne als das übrige Grün/Rot der restlichen Seite. */
+.punkt-kannich { background-color: #0da1a7; }
+.punkt-uebem { background-color: #f99593; }
+.punkt-offen { background-color: #e8e8ed; }
+
+/* Ring + Legende nebeneinander statt untereinander (nur im
+   Session-Fortschritt-Panel im Lernmodus). */
+.fortschritt-reihe {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.fortschritt-reihe .fortschritt-legende {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Der Ring hier ist deutlich größer als im Dashboard und zeigt zusätzlich
+   eine kleine zweite Zeile ("kann ich") unter der Prozentzahl. */
+#session-ring {
+  width: 41%;
+  height: auto;
+  aspect-ratio: 1;
+  flex-shrink: 0;
+  margin: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+#session-prozent {
+  position: relative;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+#session-ring small {
+  position: relative;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--farbe-text-hell);
+}
+
+/* Button "Fortschritt anzeigen": Text mittig, Icon links + Pfeil rechts
+   bleiben an den Rändern (3-spaltiges Grid statt einfachem Flex, damit
+   der Text unabhängig von der Icon-Breite wirklich mittig bleibt). */
+.btn-fortschritt-anzeigen {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  background-color: #e7f5f6;
+  color: #0f8c9b;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 14px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.btn-fortschritt-anzeigen span:nth-child(2) {
+  text-align: center;
+}
+
+.btn-fortschritt-anzeigen:hover {
+  opacity: 0.88;
+}
+
+.btn-fortschritt-icon {
+  color: #0f8c9b;
+  font-size: 15px;
+  line-height: 1;
+}
 
 /* ==========================================================
    LERNMODUS
@@ -570,14 +678,32 @@ h1, h2, h3 {
 
 .card-front {
   background-color: rgb(253, 254, 254);
+  justify-content: flex-start;
+}
+
+/* Schiebt "Frage" + Pfeil-Markierungen auf dieselbe Höhe wie die
+   Pfeile in der Deko-Ebene (die sitzen dort nicht in der Kartenmitte,
+   sondern etwas höher - siehe Figma-Frame "Lernkartendesign"). */
+.card-front .label {
+  margin-top: 10.8%;
 }
 
 .card-back {
-  background-color: var(--farbe-primaer-hell);
+  background-color: #e4f4f5;
   transform: rotateY(180deg);
+  border: 3px solid #ffffff;
+  box-sizing: border-box;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  justify-content: flex-start;
 }
 
-/* Komplette Deko-Ebene der Kartenvorderseite, 1:1 aus Figma übernommen
+/* Schiebt "Antwort" + Pfeil-Markierungen auf dieselbe Höhe wie die
+   Pfeile in der Deko-Ebene (analog zur Vorderseite). */
+.card-back .label {
+  margin-top: 10.8%;
+}
+
+/* Komplette Deko-Ebene der Vorderseite, 1:1 aus Figma übernommen
    ("Lernkartendesign"-Gruppe): Blobs unten links/oben rechts, Punktwolke,
    zwei Schwung-Linien und die kleinen Pfeil-Markierungen neben "FRAGE".
    Die Insets entsprechen dem leichten Überstand über den Kartenrand
@@ -587,6 +713,19 @@ h1, h2, h3 {
   position: absolute;
   inset: -0.89% -0.7% -1.79% -0.76%;
   background-image: url("images/lernkarte-deko-vorne.svg");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Rückseite bekommt nur die Pfeil-Markierungen neben "Antwort" -
+   bewusst ohne die Blobs/Punktwolke/Schwunglinien der Vorderseite. */
+.card-back::before {
+  content: "";
+  position: absolute;
+  inset: -0.89% -0.7% -1.79% -0.76%;
+  background-image: url("images/lernkarte-deko-hinten.svg");
   background-size: 100% 100%;
   background-repeat: no-repeat;
   pointer-events: none;
@@ -609,9 +748,6 @@ h1, h2, h3 {
   z-index: 1;
 }
 
-.card-back .label {
-  background-color: rgba(255, 255, 255, 0.6);
-}
 
 .text {
   font-size: 22px;
@@ -808,22 +944,57 @@ h1, h2, h3 {
   border-radius: 999px;
 }
 
-/* ---- Themen-Liste im Lernmodus (Kategorien-Zeilen, ganze Zeile klickbar) ---- */
-.themen-zeile {
-  border: none;
+/* ---- Kategorie-Buttons im Lernmodus: gleiche Form/Größe wie
+   "Fortschritt anzeigen", aber mit Titel links, Kartenanzahl + Pfeil
+   rechts, und individueller Hintergrundfarbe pro Button. ---- */
+.themen-panel .deck-liste {
+  gap: 4px;
+}
+
+.btn-kategorie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   width: 100%;
-  text-align: left;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 999px;
   cursor: pointer;
   font-family: inherit;
+  text-align: left;
+  box-sizing: border-box;
+  transition: opacity 0.12s ease;
 }
 
-.themen-zeile:hover {
-  box-shadow: 0 6px 18px rgba(20, 45, 40, 0.14);
+.btn-kategorie:hover {
+  opacity: 0.88;
 }
 
-.themen-zeile.aktiv {
+.btn-kategorie.aktiv {
   outline: 2px solid var(--farbe-primaer);
   outline-offset: -2px;
+}
+
+.btn-kategorie-titel {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--farbe-text);
+}
+
+.btn-kategorie-rechts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--farbe-text);
+}
+
+.btn-kategorie-pfeil {
+  font-size: 14px;
+  line-height: 1;
 }
 
 /* ==========================================================

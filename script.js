@@ -51,13 +51,34 @@ function ergaenzeDeckStatistik(decks) {
   return decks;
 }
 
+// Die fünf Fach-Kategorien, die im "Kategorien"-Feld im Lernmodus als
+// Buttons erscheinen. Fragen/Antworten kommen später dazu - bis dahin
+// legen wir die Decks schon mal leer an, damit die Buttons funktionieren.
+const STANDARD_KATEGORIEN = ["VWL", "Recht", "FiBu", "Statistik", "Kosten"];
+
+// Ergänzt fehlende Kategorie-Decks (auch bei bereits vorhandenem Local
+// Storage, damit die neuen Buttons nicht ins Leere führen).
+function ergaenzeStandardKategorien(decks) {
+  STANDARD_KATEGORIEN.forEach((titel, index) => {
+    if (!decks.some((d) => d.titel === titel)) {
+      decks.push({
+        id: Date.now() + index,
+        titel,
+        statistik: { durchlaeufeAbgeschlossen: 0, verlauf: [] },
+        karten: []
+      });
+    }
+  });
+  return decks;
+}
+
 // Lädt die Decks aus dem Local Storage. Falls es noch die alte, einfache
 // Speicherform (ein einzelnes Deck ohne "gekonnt"-Status) gibt, wird sie
 // einmalig in das neue Format überführt.
 function ladeDecks() {
   const gespeichert = localStorage.getItem(SPEICHER_SCHLUESSEL);
   if (gespeichert) {
-    return ergaenzeDeckStatistik(ergaenzeLernfelder(JSON.parse(gespeichert)));
+    return ergaenzeStandardKategorien(ergaenzeDeckStatistik(ergaenzeLernfelder(JSON.parse(gespeichert))));
   }
 
   const altesDeck = localStorage.getItem(ALTER_SPEICHER_SCHLUESSEL);
@@ -71,10 +92,10 @@ function ladeDecks() {
       zuletztGelernt: null
     }));
     localStorage.removeItem(ALTER_SPEICHER_SCHLUESSEL);
-    return [{ id: 1, titel: "Hauptstädte", statistik: { durchlaeufeAbgeschlossen: 0, verlauf: [] }, karten }];
+    return ergaenzeStandardKategorien([{ id: 1, titel: "Hauptstädte", statistik: { durchlaeufeAbgeschlossen: 0, verlauf: [] }, karten }]);
   }
 
-  return erzeugeStandardDecks();
+  return ergaenzeStandardKategorien(erzeugeStandardDecks());
 }
 
 function speichereDecks() {
@@ -188,14 +209,21 @@ navLernen.addEventListener("click", () => {
 });
 
 // "Fortschritt": zeigt vorerst die bestehende Statistik-Seite (die eigene
-// "Fortschritt"-Seite aus dem Referenzbild bauen wir später).
-navFortschritt.addEventListener("click", () => {
+// "Fortschritt"-Seite aus dem Referenzbild bauen wir später). Sowohl der
+// Nav-Punkt oben als auch der "Fortschritt anzeigen"-Button im Lernmodus
+// führen beide hierher.
+function zeigeFortschritt() {
   renderStatistik();
   viewDashboard.classList.add("hidden");
   viewLernmodus.classList.add("hidden");
   viewStatistik.classList.remove("hidden");
   setzeAktivenNavPunkt("fortschritt");
-});
+}
+
+navFortschritt.addEventListener("click", zeigeFortschritt);
+
+const btnFortschrittAnzeigen = document.getElementById("btn-fortschritt-anzeigen");
+btnFortschrittAnzeigen.addEventListener("click", zeigeFortschritt);
 
 btnStatistikZurueck.addEventListener("click", zeigeDashboard);
 
@@ -225,7 +253,8 @@ function renderDashboard() {
     const optik = DECK_OPTIK[index % DECK_OPTIK.length];
 
     const zeile = document.createElement("div");
-    zeile.className = "deck-zeile";
+    zeile.className = "deck-zeile dashboard-zeile";
+    zeile.style.backgroundColor = KATEGORIEN_FARBEN[index % KATEGORIEN_FARBEN.length];
 
     const icon = document.createElement("div");
     icon.className = "deck-icon";
@@ -307,13 +336,13 @@ function aktualisiereGesamtFortschritt() {
   document.getElementById("stat-uebem").textContent = uebenAlleDecks;
   document.getElementById("stat-offen").textContent = offenAlleDecks;
 
-  // Ring als drei aneinandergereihte Kreisabschnitte: grün (kann ich),
-  // rot (muss ich üben) und grau (offen) - Farben passend zu den Punkten in der Legende.
+  // Ring als drei aneinandergereihte Kreisabschnitte - selbes Farbschema
+  // wie der Session-Fortschritt-Ring im Lernmodus (siehe .punkt-kannich/-uebem/-offen).
   const ring = document.getElementById("fortschritt-ring");
   const gekonntGrad = gesamtAlleDecks === 0 ? 0 : (gekonntAlleDecks / gesamtAlleDecks) * 360;
   const uebenGrad = gesamtAlleDecks === 0 ? 0 : (uebenAlleDecks / gesamtAlleDecks) * 360;
   const uebenEnde = gekonntGrad + uebenGrad;
-  ring.style.background = `conic-gradient(var(--farbe-gruen) ${gekonntGrad}deg, var(--farbe-rot) ${gekonntGrad}deg ${uebenEnde}deg, #d7dde1 ${uebenEnde}deg)`;
+  ring.style.background = `conic-gradient(#0da1a7 ${gekonntGrad}deg, #f99593 ${gekonntGrad}deg ${uebenEnde}deg, #e8e8ed ${uebenEnde}deg)`;
 }
 
 // Auf-/Zuklappen des "Neues Deck erstellen"-Formulars
@@ -409,41 +438,48 @@ function fehlerkartenDesDecks(deck) {
   return deck.karten.filter((k) => k.istFehlerkarte);
 }
 
-// Baut die Themen-Liste in der rechten Spalte des Lernmodus neu auf:
-// alle Decks als klickbare Zeile (führt in deren normalen Lernmodus),
-// das aktuell geöffnete Deck wird optisch hervorgehoben.
+// Hintergrundfarben der fünf Kategorie-Buttons, in der vorgegebenen Reihenfolge
+const KATEGORIEN_FARBEN = ["#eaf4fc", "#f1edfc", "#e9f5ee", "#fef5dd", "#fdebe2"];
+
+// Baut die Kategorien-Liste in der rechten Spalte des Lernmodus neu auf:
+// fünf feste Fach-Buttons (führen in deren normalen Lernmodus), das
+// aktuell geöffnete Deck wird optisch hervorgehoben.
 function renderThemenListe() {
   themenListe.innerHTML = "";
 
-  decks.forEach((deck, index) => {
+  STANDARD_KATEGORIEN.forEach((titel, index) => {
+    const deck = decks.find((d) => d.titel === titel);
+    if (!deck) return;
+
     const gesamt = deck.karten.length;
-    const optik = DECK_OPTIK[index % DECK_OPTIK.length];
 
-    const zeile = document.createElement("button");
-    zeile.className = "deck-zeile themen-zeile";
-    if (deck.id === aktuellesDeckId) zeile.classList.add("aktiv");
-    zeile.addEventListener("click", () => oeffneDeck(deck.id, "normal"));
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "btn-kategorie";
+    if (deck.id === aktuellesDeckId) btn.classList.add("aktiv");
+    btn.style.backgroundColor = KATEGORIEN_FARBEN[index % KATEGORIEN_FARBEN.length];
+    btn.addEventListener("click", () => oeffneDeck(deck.id, "normal"));
 
-    const icon = document.createElement("div");
-    icon.className = "deck-icon";
-    icon.style.backgroundColor = optik.farbe;
-    icon.textContent = optik.icon;
+    const titelSpan = document.createElement("span");
+    titelSpan.className = "btn-kategorie-titel";
+    titelSpan.textContent = titel;
 
-    const info = document.createElement("div");
-    info.className = "deck-info";
+    const rechts = document.createElement("span");
+    rechts.className = "btn-kategorie-rechts";
 
-    const titel = document.createElement("h3");
-    titel.textContent = deck.titel;
+    const anzahlSpan = document.createElement("span");
+    anzahlSpan.textContent = gesamt;
 
-    const details = document.createElement("p");
-    details.textContent = `${gesamt} Karte${gesamt === 1 ? "" : "n"}`;
+    const pfeilSpan = document.createElement("span");
+    pfeilSpan.className = "btn-kategorie-pfeil";
+    pfeilSpan.textContent = "→";
 
-    info.appendChild(titel);
-    info.appendChild(details);
+    rechts.appendChild(anzahlSpan);
+    rechts.appendChild(pfeilSpan);
 
-    zeile.appendChild(icon);
-    zeile.appendChild(info);
-    themenListe.appendChild(zeile);
+    btn.appendChild(titelSpan);
+    btn.appendChild(rechts);
+    themenListe.appendChild(btn);
   });
 }
 
@@ -552,7 +588,8 @@ function aktualisiereSessionFortschritt() {
   const gekonntGrad = sessionGesamt === 0 ? 0 : (gekonnt / sessionGesamt) * 360;
   const uebenGrad = sessionGesamt === 0 ? 0 : (ueben / sessionGesamt) * 360;
   const uebenEnde = gekonntGrad + uebenGrad;
-  ring.style.background = `conic-gradient(var(--farbe-gruen) ${gekonntGrad}deg, var(--farbe-rot) ${gekonntGrad}deg ${uebenEnde}deg, #d7dde1 ${uebenEnde}deg)`;
+  // Eigenes Farbschema für diesen Ring (siehe .punkt-kannich/-uebem/-offen in style.css)
+  ring.style.background = `conic-gradient(#0da1a7 ${gekonntGrad}deg, #f99593 ${gekonntGrad}deg ${uebenEnde}deg, #e8e8ed ${uebenEnde}deg)`;
 }
 
 // Aktualisiert Text und Balken der Fortschrittsanzeige im Lernmodus.
