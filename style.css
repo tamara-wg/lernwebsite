@@ -398,10 +398,11 @@ h1, h2, h3 {
   align-items: center;
   padding: 20px;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .card-front {
-  background-color: var(--farbe-karte);
+  background-color: rgb(253, 254, 254);
 }
 
 .card-back {
@@ -409,11 +410,39 @@ h1, h2, h3 {
   transform: rotateY(180deg);
 }
 
+/* Deko-Punktraster oben rechts auf der Kartenvorderseite (aus dem Bild ausgemessen) */
+.card-front::before {
+  content: "";
+  position: absolute;
+  top: 30px;
+  right: 25px;
+  width: 90px;
+  height: 90px;
+  background-image: radial-gradient(rgba(20, 30, 60, 0.4) 1.4px, transparent 1.6px);
+  background-size: 12px 12px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Weicher blauer Deko-Blob unten links, der aus der Ecke "herausläuft" */
+.card-front::after {
+  content: "";
+  position: absolute;
+  bottom: -50px;
+  left: -50px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(62, 136, 238, 0.28) 0%, rgba(62, 136, 238, 0) 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
 /* "FRAGE" / "ANTWORT" als kleine runde Pille, wie im Referenzbild */
 .label {
   display: inline-block;
-  background-color: var(--farbe-primaer-hell);
-  color: var(--farbe-primaer-dunkel);
+  background-color: rgb(233, 246, 249);
+  color: rgb(8, 128, 143);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -421,6 +450,8 @@ h1, h2, h3 {
   padding: 6px 14px;
   border-radius: 999px;
   margin-bottom: 16px;
+  position: relative;
+  z-index: 1;
 }
 
 .card-back .label {
@@ -430,6 +461,9 @@ h1, h2, h3 {
 .text {
   font-size: 22px;
   font-weight: 700;
+  color: rgb(8, 12, 30);
+  position: relative;
+  z-index: 1;
 }
 
 .hint {
@@ -446,7 +480,7 @@ h1, h2, h3 {
   margin-right: auto;
   display: flex;
   justify-content: center;
-  gap: 16px;
+  gap: 20px;
 }
 
 .btn {
@@ -463,29 +497,6 @@ h1, h2, h3 {
   opacity: 0.85;
 }
 
-/* Buttons mit fettem Titel + kleinem grauem Untertext (Gewusst/Nicht gewusst) */
-#btn-gewusst,
-#btn-nicht-gewusst {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  padding: 16px 20px;
-}
-
-.btn-titel {
-  font-weight: 700;
-  font-size: 15px;
-}
-
-.btn-sub {
-  font-size: 12px;
-  font-weight: 500;
-  opacity: 0.75;
-}
-
 .btn-red {
   background-color: var(--farbe-rot-hell);
   color: var(--farbe-rot);
@@ -494,6 +505,88 @@ h1, h2, h3 {
 .btn-green {
   background-color: var(--farbe-gruen-hell);
   color: var(--farbe-gruen);
+}
+
+/* ==========================================================
+   "Gewusst" / "Nicht gewusst" - Buttons 1:1 nach Referenzbild:
+   freistehender weißer Icon-Kreis mit Schatten links,
+   Titel (fett, groß) + grauer Untertext rechts daneben.
+   ========================================================== */
+.btn-antwort {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  padding: 22px 24px;
+  border: 3px solid #ffffff;
+  box-sizing: border-box;
+  border-radius: 22px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+
+.btn-antwort:hover {
+  opacity: 0.9;
+}
+
+.btn-antwort:active {
+  transform: scale(0.98);
+}
+
+.btn-antwort-icon {
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  box-shadow: 0 3px 8px rgba(20, 30, 25, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.btn-antwort-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.btn-titel {
+  font-weight: 700;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.btn-sub {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--farbe-text-hell);
+}
+
+/* Grundfarbe + weicher, dunklerer Verlauf, der unten rechts in die Ecke läuft
+   (aus dem Referenzbild gemessen: dort ist die Füllung sichtbar gesättigter) */
+.btn-antwort-rot {
+  background: radial-gradient(circle at 90% 88%, rgb(253, 220, 219) 0%, rgb(254, 240, 241) 55%);
+}
+
+.btn-antwort-rot .btn-antwort-icon,
+.btn-antwort-rot .btn-titel {
+  color: rgb(237, 62, 61);
+}
+
+.btn-antwort-gruen {
+  background: radial-gradient(circle at 90% 82%, rgb(208, 239, 233) 0%, rgb(236, 247, 246) 55%);
+}
+
+.btn-antwort-gruen .btn-antwort-icon,
+.btn-antwort-gruen .btn-titel {
+  color: rgb(5, 131, 84);
 }
 
 #fertig-nachricht h2 {
