@@ -26,6 +26,10 @@
   /* Feinerer, dezenterer Schatten aus dem Figma-Frame der Lernen-Seite
      (Fortschrittsbalken, Karte, Seitenkästen, Navigation). */
   --schatten-fein: 0 2px 6px rgba(0, 0, 0, 0.05);
+
+  /* Farben für den aktiven Punkt in der Navigationsleiste (aus Figma). */
+  --farbe-nav-aktiv-bg: #f2fcfd;
+  --farbe-nav-aktiv-text: #038fab;
 }
 
 /* Grundlegendes Aussehen der Seite.
@@ -107,18 +111,17 @@ h1, h2, h3 {
   opacity: 0.6;
 }
 
-/* ---- Globale Navigationsleiste (ersetzt die frühere Kopfleiste) ---- */
+/* ---- Globale Navigationsleiste (ersetzt die frühere Kopfleiste) ----
+   Laut Figma-Entwurf sind Logo/Titel und der Pillen-Balken zwei getrennte
+   Elemente ohne gemeinsame Box: Logo+Titel liegen frei auf dem Hintergrund,
+   nur der Pillen-Balken selbst hat eine weiße Fläche mit Schatten. */
 .site-nav {
-  max-width: 1100px;
-  margin: 0 auto 28px auto;
-  background-color: var(--farbe-karte);
-  border-radius: 28px;
-  box-shadow: var(--schatten-fein);
-  padding: 12px 22px;
+  max-width: 1200px;
+  margin: 0 auto 32px auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 24px;
   text-align: left;
   flex-wrap: wrap;
 }
@@ -126,50 +129,57 @@ h1, h2, h3 {
 .site-nav-marke {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 18px;
+  flex-shrink: 0;
 }
 
 .site-nav-logo {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, var(--farbe-primaer), var(--farbe-primaer-dunkel));
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
+  width: 60px;
+  height: 60px;
   flex-shrink: 0;
+  display: block;
 }
 
 .site-nav-titel-block h1 {
   margin: 0;
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #000000;
 }
 
 .site-nav-untertitel {
   margin: 2px 0 0 0;
-  font-size: 12px;
-  color: var(--farbe-text-hell);
+  font-size: 14px;
+  font-weight: 400;
+  color: #8487a3;
 }
 
-/* Pillenförmiger Container mit den einzelnen Nav-Punkten */
+/* Weißer Pillen-Balken, der die Nav-Punkte umschließt (aus Figma:
+   Farbe #fdfdfd, komplett rund, feiner Schatten, deutlich breiter
+   Balken statt eng um die Buttons geschrumpft). */
 .site-nav-pillen {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 4px;
-  background-color: var(--farbe-hintergrund);
+  background-color: #fdfdfd;
   border-radius: 999px;
-  padding: 4px;
+  box-shadow: var(--schatten-fein);
+  padding: 8px 10px;
+  flex: 1 1 700px;
+  max-width: 700px;
+  min-height: 64px;
+  box-sizing: border-box;
 }
 
 .nav-pille {
   border: none;
   background: none;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.02em;
-  padding: 10px 16px;
+  padding: 12px 20px;
   border-radius: 999px;
   cursor: pointer;
   color: var(--farbe-text-hell);
@@ -180,11 +190,10 @@ h1, h2, h3 {
   color: var(--farbe-text);
 }
 
-/* Aktiver Nav-Punkt: weißer Pillen-Hintergrund + Schatten, wie im Referenzbild */
+/* Aktiver Nav-Punkt: Farben aus Figma (heller Türkis-Hintergrund + türkise Schrift) */
 .nav-pille.aktiv {
-  background-color: var(--farbe-karte);
-  color: var(--farbe-primaer-dunkel);
-  box-shadow: var(--schatten);
+  background-color: var(--farbe-nav-aktiv-bg);
+  color: var(--farbe-nav-aktiv-text);
 }
 
 /* "Karten" ist aktuell nur ein Platzhalter (Seite kommt später) */
@@ -1042,13 +1051,37 @@ h1, h2, h3 {
   }
 
   .site-nav {
-    padding: 12px 16px;
     flex-direction: column;
     align-items: stretch;
+    gap: 14px;
   }
 
+  /* Ohne diese Regeln würden sich Marke und Pillen-Balken an ihrem
+     eigenen Inhalt (z. B. "Fortschritt") aufziehen, statt sich an die
+     Bildschirmbreite zu halten - das hat vorher die ganze Seite nach
+     rechts rausgeschoben. Das "flex: 1 1 700px" vom Desktop-Layout muss
+     hier zusätzlich zurückgesetzt werden, weil sich in der Spalten-
+     Anordnung die Hauptachse dreht: aus der 700px-Breitenvorgabe würde
+     sonst eine 700px-Höhenvorgabe (der Balken wäre riesig hoch). */
+  .site-nav-marke,
   .site-nav-pillen {
-    overflow-x: auto;
+    width: 100%;
+    max-width: 100%;
+    flex: none;
+  }
+
+  /* Statt seitlich wegzuscrollen, stehen die vier Nav-Punkte hier als
+     festes 2x2-Raster - so ist immer alles sichtbar, ohne wischen zu
+     müssen, und die Buttons bleiben gleich groß. */
+  .site-nav-pillen {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    min-height: auto;
+  }
+
+  .nav-pille {
+    text-align: center;
   }
 
   .text {

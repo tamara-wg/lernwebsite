@@ -173,7 +173,7 @@ const keineKartenNachricht = document.getElementById("keine-karten-nachricht");
 // GLOBALE NAVIGATION (Kopfleiste, auf allen Ansichten gleich)
 // ============================================================
 
-// Markiert den passenden Nav-Punkt als "aktiv" (weiße Pille, siehe CSS)
+// Markiert den passenden Nav-Punkt als "aktiv" (türkise Pille, siehe CSS)
 function setzeAktivenNavPunkt(punkt) {
   [navHome, navLernen, navFortschritt].forEach((btn) => btn.classList.remove("aktiv"));
   if (punkt === "home") navHome.classList.add("aktiv");
