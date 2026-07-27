@@ -77,6 +77,80 @@ Alle vier Ansichten können zunächst innerhalb einer einzigen HTML-Seite umgese
 
 ## Design
 
+### Figma Implementation Rules
+
+When implementing a Figma design, visual fidelity is a priority.
+
+The Figma design is the source of truth.
+
+#### Before implementation
+
+1. Use Figma MCP `get_design_context` for the exact frame or component.
+2. Inspect the full structure before writing code.
+3. Identify:
+   - dimensions
+   - padding
+   - gaps
+   - alignment
+   - typography
+   - colors
+   - borders
+   - border radius
+   - shadows
+   - icon dimensions
+   - layout relationships
+4. Do not estimate values that are available through Figma MCP.
+
+#### Implementation
+
+Match Figma values exactly.
+
+Do not normalize unusual values to common UI values.
+
+For example, never silently convert:
+- 18px → 16px
+- 22px → 24px
+- 14px radius → 12px
+- an exact Figma color → a similar existing color
+
+unless explicitly instructed.
+
+Use responsive layout techniques such as Flexbox and Grid instead of reproducing coordinates with absolute positioning.
+
+Do not modify unrelated components.
+
+#### Verification
+
+Implementation is NOT complete after the first coding pass.
+
+After implementing:
+
+1. Retrieve the relevant Figma design context again.
+2. Compare the implementation against Figma.
+3. Perform a systematic visual audit of:
+
+   - outer margins
+   - padding
+   - gaps
+   - width
+   - height
+   - horizontal alignment
+   - vertical alignment
+   - font family
+   - font size
+   - font weight
+   - line height
+   - colors
+   - borders
+   - border radius
+   - shadows
+   - icon sizes
+   - element positions
+
+4. Fix all discrepancies found.
+
+Only then consider the component complete.
+
 ### Grundprinzip
 
 Das Design der Website soll sich an von mir bereitgestellten Referenzbildern orientieren.

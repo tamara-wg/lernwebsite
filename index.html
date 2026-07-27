@@ -26,52 +26,76 @@
       <img src="images/logo-icon.svg" alt="" class="site-nav-logo">
       <div class="site-nav-titel-block">
         <h1>lernen oder weinen</h1>
-        <p class="site-nav-untertitel">weil klausuren eh kommen</p>
+        <p class="site-nav-untertitel">weil klausuren eh kommen :(</p>
       </div>
     </div>
 
-    <nav class="site-nav-pillen">
-      <button id="nav-home" class="nav-pille">Home</button>
-      <button id="nav-lernen" class="nav-pille">Lernen</button>
-      <button id="nav-karten" class="nav-pille" disabled title="Kommt bald">Karten</button>
-      <button id="nav-fortschritt" class="nav-pille">Fortschritt</button>
-    </nav>
+    <div class="site-nav-rechts">
+      <nav class="site-nav-pillen">
+        <button id="nav-home" class="nav-pille">Home</button>
+        <button id="nav-lernen" class="nav-pille">Lernen</button>
+        <button id="nav-karten" class="nav-pille" disabled title="Kommt bald">Karten</button>
+        <button id="nav-fortschritt" class="nav-pille">Fortschritt</button>
+      </nav>
+
+      <!-- Platzhalter fuer den kuenftigen Login-Bereich (Phase 3) - aus Figma
+           1:1 uebernommen, aktuell noch ohne Funktion. -->
+      <div class="mein-konto-platzhalter" title="Kommt bald (Login)">Mein Konto</div>
+    </div>
   </header>
 
   <!-- ================= ANSICHT 1: DASHBOARD ================= -->
   <!-- Übersicht aller Decks. Diese Ansicht ist beim Start sichtbar. -->
   <div id="view-dashboard">
-    <div class="dashboard-layout">
+    <div class="home-layout">
 
-      <!-- Linke Spalte: Deck-Liste -->
-      <div class="dashboard-links">
-        <h2 class="bereich-titel">Deine Decks</h2>
-        <div class="deck-liste" id="deck-liste">
-          <!-- Deck-Zeilen werden hier per JavaScript eingefügt -->
-        </div>
+      <!-- Headerfeld: EIN gemeinsames Feld (1:1 aus Figma-Frame "Headerfeld") mit
+           freiem Platz links (noch offen für später), Bild in der Mitte und der
+           "Nächste Klausuren"-Karte rechts, alles innerhalb derselben hellen Fläche. -->
+      <div class="home-header-karte">
+        <div class="home-header-frei" aria-hidden="true"></div>
 
-        <div class="neues-deck">
-          <button id="btn-toggle-neues-deck" class="btn btn-toggle">+ Neues Deck erstellen</button>
-          <form id="deck-form" class="hidden">
-            <input type="text" id="input-deck-titel" placeholder="Deck-Titel (z. B. Mathe)" required>
-            <button type="submit" class="btn btn-green">Erstellen</button>
-          </form>
+        <img src="images/Homepage Header 1.png" alt="" class="home-header-bild">
+
+        <div class="home-klausuren-karte">
+          <h3 class="bereich-titel-fett">Nächste Klausuren</h3>
+          <ul class="klausuren-liste" id="klausuren-liste">
+            <!-- Die naechsten (bis zu 2) Klausuren werden hier per JavaScript eingefuegt -->
+          </ul>
         </div>
       </div>
 
-      <!-- Rechte Spalte: Gesamtfortschritt -->
-      <div class="dashboard-rechts">
-        <div class="fortschritt-panel">
-          <h3>Dein Fortschritt</h3>
-          <div class="fortschritt-ring" id="fortschritt-ring">
-            <span id="fortschritt-prozent">0%</span>
+      <!-- Untere Reihe: Deck-Liste + Gesamtfortschritt -->
+      <div class="home-untere-reihe">
+
+        <div class="home-decks-karte">
+          <h2 class="bereich-titel-fett">Deine Decks</h2>
+          <div class="deck-liste" id="deck-liste">
+            <!-- Deck-Zeilen werden hier per JavaScript eingefügt -->
           </div>
-          <ul class="fortschritt-legende">
-            <li><span class="punkt punkt-kannich"></span> Kann ich <b id="stat-kannich">0</b></li>
-            <li><span class="punkt punkt-uebem"></span> Muss ich üben <b id="stat-uebem">0</b></li>
-            <li><span class="punkt punkt-offen"></span> Offen <b id="stat-offen">0</b></li>
-          </ul>
         </div>
+
+        <div class="home-fortschritt-karte fortschritt-panel session-fortschritt-panel">
+          <h3>Dein Fortschritt</h3>
+          <div class="fortschritt-reihe">
+            <div class="fortschritt-ring" id="fortschritt-ring">
+              <span id="fortschritt-prozent">0%</span>
+              <span class="fortschritt-ring-label">Gesamtfortschritt</span>
+              <img src="images/haekchen-fortschritt.svg" alt="" class="fortschritt-ring-haekchen">
+            </div>
+            <ul class="fortschritt-legende">
+              <li><span class="punkt punkt-kannich"></span> Kann ich <b id="stat-kannich">0</b></li>
+              <li><span class="punkt punkt-uebem"></span> Muss ich üben <b id="stat-uebem">0</b></li>
+              <li><span class="punkt punkt-offen"></span> Offen <b id="stat-offen">0</b></li>
+            </ul>
+          </div>
+          <button type="button" class="btn-fortschritt-anzeigen" id="btn-fortschritt-anzeigen-home">
+            <img src="images/Icon Fortschritt.png" alt="" class="btn-fortschritt-icon-bild">
+            <span>Fortschritt anzeigen</span>
+            <span class="btn-fortschritt-icon" aria-hidden="true">→</span>
+          </button>
+        </div>
+
       </div>
 
     </div>
@@ -163,7 +187,7 @@
             </ul>
           </div>
           <button type="button" class="btn-fortschritt-anzeigen" id="btn-fortschritt-anzeigen">
-            <span class="btn-fortschritt-icon" aria-hidden="true">📊</span>
+            <img src="images/Icon Fortschritt.png" alt="" class="btn-fortschritt-icon-bild">
             <span>Fortschritt anzeigen</span>
             <span class="btn-fortschritt-icon" aria-hidden="true">→</span>
           </button>

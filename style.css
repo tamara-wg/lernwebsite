@@ -32,11 +32,54 @@
   --farbe-nav-aktiv-text: #038fab;
 }
 
+/* Schriftart "Inter" (aus Figma) - einmalig von der offiziellen Google-Fonts-
+   Quelle heruntergeladen und lokal unter fonts/ abgelegt (nicht per CDN
+   eingebunden), damit beim Seitenbesuch kein externer Aufruf nötig ist.
+   Eine Datei deckt per Variable-Font-Technik sowohl normal (400) als auch
+   fett (700) ab. */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/Inter-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/Inter-latin.woff2") format("woff2");
+}
+
+/* Der Pfeil "→" (z. B. bei "Fortschritt anzeigen") liegt außerhalb des
+   "latin"-Zeichensatzes oben und wäre ohne diese zusätzliche, ebenfalls
+   offiziell von Google Fonts geladene Mini-Datei sonst in einer anderen
+   Schriftart als der Rest des Texts gerendert worden. */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/Inter-arrow.woff2") format("woff2");
+  unicode-range: U+2192;
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/Inter-arrow.woff2") format("woff2");
+  unicode-range: U+2192;
+}
+
 /* Grundlegendes Aussehen der Seite.
-   Als Schriftart nutzen wir die Standardschrift des Betriebssystems
-   (kein Download von einem Drittanbieter nötig -> schneller & sicherer). */
+   "Inter" zuerst, mit der Standardschrift des Betriebssystems als
+   Rückfallebene, falls die Schriftdatei aus irgendeinem Grund nicht lädt. */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   background-color: var(--farbe-hintergrund);
   color: var(--farbe-text);
   text-align: center;
@@ -129,13 +172,13 @@ h1, h2, h3 {
 .site-nav-marke {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 19.44px;
   flex-shrink: 0;
 }
 
 .site-nav-logo {
-  width: 60px;
-  height: 60px;
+  width: 59.56px;
+  height: 59.43px;
   flex-shrink: 0;
   display: block;
 }
@@ -148,28 +191,61 @@ h1, h2, h3 {
 }
 
 .site-nav-untertitel {
-  margin: 2px 0 0 0;
+  margin: 3px 0 0 0;
   font-size: 14px;
   font-weight: 400;
   color: #8487a3;
 }
 
+/* Rechte Seite der Navigation: Pillen-Balken + Platzhalter für den
+   künftigen Login-Bereich, mit dem exakten 34px-Abstand aus Figma
+   zwischen den beiden. Dadurch steht der Pillen-Balken wie in Figma
+   etwas weiter links, statt bis zum rechten Rand zu reichen. */
+.site-nav-rechts {
+  display: flex;
+  align-items: center;
+  gap: 34px;
+  /* Feste Basis-Breite (688 Pillen-Balken + 34 Abstand + 173 Mein-Konto),
+     statt "auto" - ohne das berechnet der Browser die Breite dieses
+     verschachtelten Flex-Containers uneindeutig und schrumpft den
+     Pillen-Balken darin fälschlich zusammen. */
+  flex: 0 0 895px;
+}
+
 /* Weißer Pillen-Balken, der die Nav-Punkte umschließt (aus Figma:
-   Farbe #fdfdfd, komplett rund, feiner Schatten, deutlich breiter
-   Balken statt eng um die Buttons geschrumpft). */
+   Farbe #fdfdfd, Eckenradius exakt 30px (KEIN voller Pill/999px - bei
+   64px Höhe macht das einen sichtbaren Unterschied), feiner Schatten). */
 .site-nav-pillen {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 4px;
   background-color: #fdfdfd;
-  border-radius: 999px;
+  border-radius: 30px;
   box-shadow: var(--schatten-fein);
   padding: 8px 10px;
-  flex: 1 1 700px;
-  max-width: 700px;
+  flex: 1 1 688px;
+  max-width: 688px;
   min-height: 64px;
   box-sizing: border-box;
+}
+
+/* Platzhalter für den künftigen "Mein Konto"/Login-Button (Phase 3) -
+   in Figma bereits als leere Fläche angelegt (Farbe, Radius, Maße exakt
+   übernommen), noch ohne Funktion, deshalb kein <button> und kein Klick. */
+.mein-konto-platzhalter {
+  flex-shrink: 0;
+  width: 173px;
+  height: 44px;
+  box-sizing: border-box;
+  background-color: #f2f6fa;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--farbe-text-hell);
 }
 
 .nav-pille {
@@ -203,24 +279,204 @@ h1, h2, h3 {
 }
 
 /* ==========================================================
-   DASHBOARD
+   DASHBOARD / HOME (Layout 1:1 aus Figma-Frame "Desktop - 2")
    ========================================================== */
-.dashboard-layout {
-  max-width: 900px;
+.home-layout {
+  max-width: 1164px;
   margin: 0 auto;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 24px;
-  align-items: flex-start;
   text-align: left;
 }
 
-.dashboard-links {
-  flex: 1 1 380px;
+/* Headerfeld: EIN gemeinsames Feld (Figma-Frame "Headerfeld") - links freier
+   Platz (noch offen für später), Bild in der Mitte, "Nächste Klausuren"-Karte
+   rechts, alles innerhalb derselben hellen Fläche. flex-wrap sorgt dafür,
+   dass es auf schmalen Bildschirmen sauber stapelt statt zu quetschen. */
+.home-header-karte {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px;
+  background-color: #f7fafc;
+  border-radius: var(--radius-gross);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+  box-sizing: border-box;
+  padding: 26px 21px 29px 21px;
 }
 
-.dashboard-rechts {
-  flex: 0 1 300px;
+/* Aktuell leer - reserviert für Inhalt, der später noch dazukommt. */
+.home-header-frei {
+  flex: 1 1 200px;
+}
+
+.home-header-bild {
+  display: block;
+  flex: 0 1 315px;
+  width: 100%;
+  max-width: 315px;
+  height: auto;
+}
+
+.home-klausuren-karte {
+  flex: 1 1 380px;
+  max-width: 418px;
+  background-color: #fefefe;
+  border-radius: var(--radius-gross);
+  box-shadow: var(--schatten-fein);
+  box-sizing: border-box;
+  padding: 29px 38px 17px 14px;
+}
+
+.klausuren-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Text, wenn keine anstehenden Klausuren mehr übrig sind */
+.klausuren-leer {
+  margin: 0;
+  color: var(--farbe-text-hell);
+  font-size: 14px;
+}
+
+.klausur-zeile {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.klausur-icon {
+  width: 86px;
+  height: 78px;
+  flex-shrink: 0;
+  display: block;
+}
+
+/* Kein "flex: 1" mehr - der Textblock soll NICHT künstlich den ganzen
+   verfügbaren Platz auffüllen (das hat vorher die Trennlinie 24px zu weit
+   nach rechts geschoben). Er behält stattdessen seine natürliche Breite;
+   der Rest-Platz wird über "margin-left: auto" bei .klausur-trenner
+   aufgefüllt, siehe dort. */
+.klausur-info {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.klausur-name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #000000;
+}
+
+.klausur-datum {
+  margin: 2px 0 0 0;
+  font-size: 14px;
+  color: #5c6889;
+}
+
+.klausur-trenner {
+  width: 1px;
+  height: 56px;
+  /* Nicht vertikal zentriert - in Figma sitzt die Linie 14px unter dem
+     Zeilenanfang statt symmetrisch (14px oben / 8px unten). */
+  align-self: flex-start;
+  /* margin-left: auto schiebt die Linie (+ Zahl/"Tage" danach) an die
+     exakte Figma-Position (288px ab Zeilenanfang), egal wie breit der
+     Textblock links davon gerade ist. */
+  margin: 14px 0 0 auto;
+  background-color: #eef0f4;
+  flex-shrink: 0;
+}
+
+.klausur-tage {
+  display: flex;
+  flex-direction: column;
+  /* Zahl und "Tage" sind in Figma rechtsbündig (beide enden exakt an der
+     rechten Kante der Zeile) statt zentriert. */
+  align-items: flex-end;
+  flex-shrink: 0;
+  min-width: 44px;
+  /* 29px Abstand zur Trennlinie aus Figma - 9px kommen schon vom
+     Zeilen-"gap", die restlichen 20px hier zusätzlich. */
+  margin-left: 20px;
+}
+
+.klausur-tage-zahl {
+  font-size: 35px;
+  font-weight: 700;
+  color: #000000;
+  line-height: 1;
+}
+
+.klausur-tage-label {
+  font-size: 14px;
+  color: #5c6889;
+  margin-top: 2px;
+}
+
+/* Untere Reihe: Deck-Liste links, Gesamtfortschritt rechts.
+   In Figma beginnt "Dein Fortschritt" 46px weiter unten als das Deck-Feld
+   und ist auch kürzer - kein Tippfehler, das ist so gewollt (siehe
+   margin-top bei .home-fortschritt-karte), nicht auf eine gemeinsame
+   Höhe strecken. */
+.home-untere-reihe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 35px;
+  align-items: flex-start;
+}
+
+.home-decks-karte {
+  flex: 1 1 649px;
+  max-width: 649px;
+  /* Exakt #fdfdfd aus Figma, nicht die globale --farbe-karte (#ffffff) -
+     die zwei Weißtöne sind zwar sehr ähnlich, aber nicht identisch. */
+  background-color: #fdfdfd;
+  border-radius: var(--radius-gross);
+  box-shadow: var(--schatten-fein);
+  box-sizing: border-box;
+  padding: 29px 35px 18px 35px;
+}
+
+/* Bekommt Hintergrund/Rundung/Schatten/Innenabstand bereits über die
+   Klassen "fortschritt-panel session-fortschritt-panel" (siehe HTML) -
+   hier nur Breite + der bewusste 46px-Versatz nach unten aus Figma. */
+.home-fortschritt-karte {
+  flex: 1 1 480px;
+  max-width: 480px;
+  margin-top: 46px;
+  box-sizing: border-box;
+}
+
+/* Titel "Deine Decks" / "Nächste Klausuren": fett + schwarz, wie in Figma
+   (bewusst anders als die grauen Kleinschrift-Labels an anderer Stelle -
+   "Dein Fortschritt" bekommt weiter unten eine eigene, aber gleich
+   aussehende Regel, da dessen h3 mit der Lernen-Seite geteilt wird). */
+.bereich-titel-fett {
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #000000;
+  margin: 0 0 18px 0;
+}
+
+.home-decks-karte h2 {
+  margin-bottom: 17px;
+}
+
+.home-klausuren-karte h3 {
+  margin-bottom: 15px;
+  /* Titel sitzt in Figma 8px weiter rechts als die Kalender-Zeilen
+     darunter (22px vs. 14px Abstand zum Kartenrand) - kein Tippfehler. */
+  margin-left: 8px;
 }
 
 .bereich-titel {
@@ -242,6 +498,7 @@ h1, h2, h3 {
   background-color: var(--farbe-karte);
   border-radius: var(--radius-mittel);
   box-shadow: var(--schatten);
+  box-sizing: border-box;
   padding: 14px 18px;
   display: flex;
   align-items: center;
@@ -249,11 +506,27 @@ h1, h2, h3 {
   flex-wrap: wrap;
 }
 
-/* Deck-Zeilen auf der Home-Seite: gleiche Rundung wie die Kategorie-
-   Buttons im Lernmodus (Hintergrundfarbe wird per JS aus KATEGORIEN_FARBEN
-   gesetzt, reihum wie bei den Kategorie-Buttons). */
+/* Nur die Home-Seite bekommt Figmas exakte Zeilen-Maße (579x64 bei einer
+   649px breiten Karte) - die Statistik-Seite nutzt weiterhin die
+   Innenabstand-basierte Höhe der Basis-Klasse .deck-zeile. */
+.home-decks-karte .deck-liste {
+  gap: 18px;
+}
+
+/* Deck-Zeilen auf der Home-Seite: weißer Balken mit dünnem Rand statt
+   Schatten, leicht abgerundet, feste Höhe - 1:1 aus Figma ("VWL"/"Kosten"/...
+   Gruppen). */
 .dashboard-zeile {
-  border-radius: 999px;
+  background-color: #fefefe;
+  border: 1px solid #f3f5f9;
+  border-radius: 15px;
+  box-shadow: none;
+  /* min-height statt height: bei genug Platz exakt 64px wie in Figma, wächst
+     aber automatisch mit, wenn die Aktionen-Buttons auf schmalen Bildschirmen
+     in eine zweite Zeile umbrechen (siehe 480px-Media-Query weiter unten). */
+  min-height: 64px;
+  padding: 0 18px 0 11px;
+  gap: 16px;
 }
 
 .deck-icon {
@@ -265,6 +538,15 @@ h1, h2, h3 {
   justify-content: center;
   font-size: 20px;
   flex-shrink: 0;
+}
+
+/* Die Icon-Bilder auf der Home-Seite (Icon VWL/Kosten/Recht/Statistik/FiBu) -
+   die farbige Kreis-/Squircle-Fläche ist schon Teil der PNG-Datei. Breite/
+   Höhe werden pro Deck exakt per JavaScript gesetzt (siehe DECK_ICON_BILDER
+   in script.js), da jedes Icon in Figma ein eigenes Seitenverhältnis hat. */
+.deck-icon-bild {
+  flex-shrink: 0;
+  display: block;
 }
 
 .deck-info {
@@ -295,9 +577,12 @@ h1, h2, h3 {
 .btn-deck-fehlerkarten {
   padding: 8px 14px;
   font-size: 13px;
-  border-radius: 999px;
+  /* 15px sähe bei dieser Button-Höhe (32px) fast wie eine volle Pille aus
+     (fast die halbe Höhe abgerundet) - 8px wirkt bei dieser Größe optisch
+     ähnlich eckig wie 15px beim 64px hohen Deck-Balken in Figma. */
+  border-radius: 8px;
   border: none;
-  font-weight: 700;
+  font-weight: 400;
   cursor: pointer;
   font-family: inherit;
 }
@@ -308,8 +593,8 @@ h1, h2, h3 {
 }
 
 .btn-deck-fehlerkarten {
-  background-color: #fff1e0;
-  color: #b9660f;
+  background-color: #ebe4fd;
+  color: #5e6bf0;
 }
 
 .btn-deck-lernen:hover,
@@ -317,31 +602,7 @@ h1, h2, h3 {
   opacity: 0.85;
 }
 
-/* ---- "Neues Deck erstellen" ---- */
-.neues-deck {
-  margin-top: 20px;
-}
-
-#deck-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 12px;
-  background-color: var(--farbe-karte);
-  border-radius: var(--radius-mittel);
-  box-shadow: var(--schatten);
-  padding: 16px;
-}
-
-#deck-form input {
-  padding: 10px 12px;
-  border: 1px solid #dfe4e6;
-  border-radius: var(--radius-klein);
-  font-size: 14px;
-  font-family: inherit;
-}
-
-/* ---- Fortschritts-Panel (rechte Spalte) ---- */
+/* ---- Fortschritts-Panel ---- */
 .fortschritt-panel {
   background-color: var(--farbe-karte);
   border-radius: var(--radius-mittel);
@@ -388,6 +649,27 @@ h1, h2, h3 {
   text-align: left;
 }
 
+/* "Dein Fortschritt" auf der Home-Seite: exakte Figma-Maße statt der
+   Standard-Werte von .fortschritt-panel/.fortschritt-reihe oben - über die
+   doppelte Klasse (.fortschritt-panel.home-fortschritt-karte) höher
+   gewichtet, damit nur diese Karte betroffen ist, nicht die Lernen-Seite. */
+.fortschritt-panel.home-fortschritt-karte {
+  padding: 28px 30px 25px 30px;
+}
+
+.fortschritt-panel.home-fortschritt-karte h3 {
+  margin: 0 0 26px 0;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #000000;
+}
+
+.fortschritt-panel.home-fortschritt-karte .fortschritt-reihe {
+  margin-bottom: 19px;
+}
+
 /* Der Ring wird per JavaScript eingefärbt (conic-gradient), abhängig vom Fortschritt.
    Der weiße Kreis in der Mitte entsteht durch ::before (ein "unsichtbares" Extra-Element per CSS). */
 .fortschritt-ring {
@@ -410,10 +692,40 @@ h1, h2, h3 {
   border-radius: 50%;
 }
 
+/* Home-Ring: etwas dickerer Farbring als auf der Lernen-Seite (kleinerer
+   weißer Innenkreis), auf Wunsch nach dem Figma-Redesign. */
+/* Doppelt so dick wie vorher (9px) auf Wunsch - kleinerer weißer
+   Innenkreis, dickerer farbiger Bogen außenrum. */
+#fortschritt-ring::before {
+  inset: 18px;
+}
+
 #fortschritt-prozent {
   position: relative;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
+  color: #000000;
+}
+
+/* Neu aus Figma: Label + Häkchen unter der Prozentzahl (nur im Home-Ring,
+   die Lernen-Seite behält ihre eigene, unveränderte "kann ich"-Beschriftung). */
+.fortschritt-ring-label {
+  position: relative;
+  font-size: 12px;
+  font-weight: 400;
+  color: #2e3955;
+}
+
+.fortschritt-ring-haekchen {
+  position: relative;
+  width: 15px;
+  height: auto;
+  display: block;
+  margin-top: 2px;
+  /* Die rohe Vektor-Form aus Figma ist gedreht/gespiegelt abgelegt - ohne
+     diese Transformation sieht sie wie eine Spirale statt wie das
+     gewellte Häkchen aus. */
+  transform: rotate(-130deg) scaleY(-1);
 }
 
 .fortschritt-legende {
@@ -470,14 +782,30 @@ h1, h2, h3 {
   min-width: 0;
 }
 
-/* Der Ring hier ist deutlich größer als im Dashboard und zeigt zusätzlich
-   eine kleine zweite Zeile ("kann ich") unter der Prozentzahl. */
-#session-ring {
-  width: 41%;
+/* Ring-Größe innerhalb der Ring+Legende-Reihe: gilt sowohl für den
+   Session-Ring im Lernmodus als auch für den Gesamt-Fortschritt-Ring auf
+   der Home-Seite (beide nutzen das gleiche Layout, siehe .fortschritt-reihe). */
+.fortschritt-reihe .fortschritt-ring {
+  width: 41.7%;
   height: auto;
   aspect-ratio: 1;
   flex-shrink: 0;
   margin: 0;
+}
+
+/* Der Home-Ring zeigt jetzt Prozentzahl + "Gesamtfortschritt"-Label +
+   Häkchen untereinander statt nur der Zahl allein. */
+#fortschritt-ring {
+  flex-direction: column;
+  /* Exakt aus Figma: 4px zwischen Prozentzahl und Label, ~5px zwischen
+     Label und Häkchen - nah genug beieinander, um eine gemeinsame
+     Gap-Angabe zu verwenden. */
+  gap: 4px;
+}
+
+/* Der Ring im Lernmodus ist zusätzlich in Spalten-Richtung, weil er noch
+   eine kleine zweite Zeile ("kann ich") unter der Prozentzahl zeigt. */
+#session-ring {
   flex-direction: column;
   gap: 2px;
 }
@@ -497,7 +825,10 @@ h1, h2, h3 {
 
 /* Button "Fortschritt anzeigen": Text mittig, Icon links + Pfeil rechts
    bleiben an den Rändern (3-spaltiges Grid statt einfachem Flex, damit
-   der Text unabhängig von der Icon-Breite wirklich mittig bleibt). */
+   der Text unabhängig von der Icon-Breite wirklich mittig bleibt).
+   Design 1:1 von der Home-Seite übernommen (Farbe, Icon, Schriftschnitt) -
+   auf beiden Seiten identisch, jede Seite behält aber ihre eigene
+   Klick-Logik (führt bei beiden zur Statistik-Ansicht, unverändert). */
 .btn-fortschritt-anzeigen {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -505,11 +836,11 @@ h1, h2, h3 {
   gap: 10px;
   width: 100%;
   border: none;
-  background-color: #e7f5f6;
+  background-color: #eef7f9;
   color: #0f8c9b;
-  font-weight: 700;
+  font-weight: 400;
   font-size: 14px;
-  padding: 14px 18px;
+  padding: 15px 18px;
   border-radius: 999px;
   cursor: pointer;
   font-family: inherit;
@@ -528,6 +859,13 @@ h1, h2, h3 {
   color: #0f8c9b;
   font-size: 15px;
   line-height: 1;
+}
+
+.btn-fortschritt-icon-bild {
+  height: 26px;
+  width: auto;
+  flex-shrink: 0;
+  display: block;
 }
 
 /* ==========================================================
@@ -1033,15 +1371,20 @@ h1, h2, h3 {
    RESPONSIVE: Anpassungen für Tablet & Smartphone
    ========================================================== */
 @media (max-width: 760px) {
-  .dashboard-layout,
+  .home-header-karte,
+  .home-untere-reihe,
   .lernmodus-layout {
     flex-direction: column;
   }
 
-  .dashboard-rechts,
+  .home-header-frei,
+  .home-header-bild,
+  .home-klausuren-karte,
+  .home-fortschritt-karte,
   .lernmodus-seite {
     flex-basis: auto;
     width: 100%;
+    max-width: 100%;
   }
 }
 
@@ -1056,15 +1399,33 @@ h1, h2, h3 {
     gap: 14px;
   }
 
-  /* Ohne diese Regeln würden sich Marke und Pillen-Balken an ihrem
+  /* Ohne diese Regeln würden sich Marke und rechte Nav-Seite an ihrem
      eigenen Inhalt (z. B. "Fortschritt") aufziehen, statt sich an die
      Bildschirmbreite zu halten - das hat vorher die ganze Seite nach
-     rechts rausgeschoben. Das "flex: 1 1 700px" vom Desktop-Layout muss
+     rechts rausgeschoben. Das "flex: 1 1 688px" vom Desktop-Layout muss
      hier zusätzlich zurückgesetzt werden, weil sich in der Spalten-
-     Anordnung die Hauptachse dreht: aus der 700px-Breitenvorgabe würde
-     sonst eine 700px-Höhenvorgabe (der Balken wäre riesig hoch). */
+     Anordnung die Hauptachse dreht: aus der 688px-Breitenvorgabe würde
+     sonst eine 688px-Höhenvorgabe (der Balken wäre riesig hoch). */
   .site-nav-marke,
-  .site-nav-pillen {
+  .site-nav-rechts {
+    width: 100%;
+    max-width: 100%;
+    flex: none;
+  }
+
+  /* Pillen-Balken und "Mein Konto"-Platzhalter stehen auf dem Handy
+     untereinander statt nebeneinander, jeweils über die volle Breite. */
+  .site-nav-rechts {
+    flex-direction: column;
+  }
+
+  /* .site-nav-pillen steckt jetzt in .site-nav-rechts statt direkt in
+     .site-nav - der obige Reset trifft es deshalb nicht mehr automatisch.
+     Ohne "flex: none" würde sein "flex: 1 1 688px" vom Desktop hier zur
+     Höhenvorgabe (688px hoch!), weil sich in der Spalten-Anordnung von
+     .site-nav-rechts die Hauptachse dreht (gleiche Falle wie oben). */
+  .site-nav-pillen,
+  .mein-konto-platzhalter {
     width: 100%;
     max-width: 100%;
     flex: none;
@@ -1090,5 +1451,15 @@ h1, h2, h3 {
 
   .buttons {
     flex-direction: column;
+  }
+
+  /* Ohne diese Regel entscheidet allein die (je nach Icon-Bild leicht
+     unterschiedliche) Icon-Breite, ob "Lernen"/"Fehlerkarten" noch in die
+     Titelzeile passen - das sah bei einem Deck anders aus als bei den
+     anderen vier. Die Aktionen-Gruppe bekommt hier deshalb immer eine
+     eigene, volle Zeile, bei jedem Deck gleich. */
+  .deck-aktionen {
+    flex-basis: 100%;
+    margin-left: 0;
   }
 }

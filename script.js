@@ -140,9 +140,7 @@ const btnStatistikZurueck = document.getElementById("btn-statistik-zurueck");
 const statistikListe = document.getElementById("statistik-liste");
 
 const deckListe = document.getElementById("deck-liste");
-const btnToggleNeuesDeck = document.getElementById("btn-toggle-neues-deck");
-const deckForm = document.getElementById("deck-form");
-const inputDeckTitel = document.getElementById("input-deck-titel");
+const klausurenListe = document.getElementById("klausuren-liste");
 
 const deckTitelAnzeige = document.getElementById("deck-titel-anzeige");
 const themenListe = document.getElementById("themen-liste");
@@ -190,6 +188,7 @@ function zeigeDashboard() {
   viewStatistik.classList.add("hidden");
   viewDashboard.classList.remove("hidden");
   renderDashboard();
+  renderKlausuren();
   setzeAktivenNavPunkt("home");
 }
 
@@ -225,6 +224,10 @@ navFortschritt.addEventListener("click", zeigeFortschritt);
 const btnFortschrittAnzeigen = document.getElementById("btn-fortschritt-anzeigen");
 btnFortschrittAnzeigen.addEventListener("click", zeigeFortschritt);
 
+// Gleicher Button, nur auf der Home-Seite (führt ebenfalls zur Fortschritt/Statistik-Ansicht)
+const btnFortschrittAnzeigenHome = document.getElementById("btn-fortschritt-anzeigen-home");
+btnFortschrittAnzeigenHome.addEventListener("click", zeigeFortschritt);
+
 btnStatistikZurueck.addEventListener("click", zeigeDashboard);
 
 // ============================================================
@@ -241,25 +244,146 @@ const DECK_OPTIK = [
   { icon: "📓", farbe: "#fde3ea" }
 ];
 
+// "Hauptstädte" war das Test-Deck aus Phase 1. Es bleibt im Datenmodell
+// erhalten (falls später nochmal gebraucht), wird aber vorerst nirgends mehr
+// angezeigt - neue Decks gibt es laut Vorgabe erst nach einem Login (Phase 3).
+const AUSGEBLENDETES_DECK = "Hauptstädte";
+
+// Reihenfolge + Icon-Bilder der Deck-Zeilen auf der Home-Seite, 1:1 aus Figma.
+// Jedes Icon hat dort ein eigenes Seitenverhältnis (Breite/Höhe kommen direkt
+// aus den Figma-Maßen), deshalb hier pro Deck statt einheitlich hinterlegt.
+const STARTSEITE_DECK_REIHENFOLGE = ["VWL", "Kosten", "Recht", "Statistik", "FiBu"];
+const DECK_ICON_BILDER = {
+  VWL: { src: "images/Icon VWL 1.png", breite: 55, hoehe: 47 },
+  Kosten: { src: "images/Icon Kosten 1.png", breite: 63, hoehe: 46 },
+  Recht: { src: "images/Icon Recht 1.png", breite: 64, hoehe: 48 },
+  Statistik: { src: "images/Icon Statistik 1.png", breite: 63, hoehe: 49 },
+  FiBu: { src: "images/Icon FiBu 1.png", breite: 65, hoehe: 51 }
+};
+
+// ============================================================
+// "NÄCHSTE KLAUSUREN" (Home-Seite)
+// ============================================================
+
+// Feste Klausur-Termine, fest im Code hinterlegt (wie das Standard-Deck).
+// Monat ist 0-indiziert in JavaScript, 8 = September.
+const KLAUSUREN = [
+  { fach: "Kosten", datum: new Date(2026, 8, 8) },
+  { fach: "FiBu", datum: new Date(2026, 8, 11) },
+  { fach: "VWL", datum: new Date(2026, 8, 15) },
+  { fach: "Recht", datum: new Date(2026, 8, 17) },
+  { fach: "Statistik", datum: new Date(2026, 8, 21) }
+];
+
+// Anzahl volle Kalendertage zwischen heute und einem Datum (0 = heute).
+// Uhrzeiten werden dafür auf Mitternacht gesetzt, damit nur die Kalender-
+// tage zählen, nicht die genaue Uhrzeit.
+function tageBisDatum(datum) {
+  const heute = new Date();
+  heute.setHours(0, 0, 0, 0);
+  const ziel = new Date(datum);
+  ziel.setHours(0, 0, 0, 0);
+  return Math.round((ziel - heute) / (1000 * 60 * 60 * 24));
+}
+
+// Baut die "Nächste Klausuren"-Liste auf: die bis zu zwei zeitlich
+// nächsten, noch nicht vergangenen Klausuren (heute zählt noch, "0 Tage").
+function renderKlausuren() {
+  klausurenListe.innerHTML = "";
+
+  const naechste = KLAUSUREN
+    .map((k) => ({ ...k, tage: tageBisDatum(k.datum) }))
+    .filter((k) => k.tage >= 0)
+    .sort((a, b) => a.tage - b.tage)
+    .slice(0, 2);
+
+  if (naechste.length === 0) {
+    const hinweis = document.createElement("p");
+    hinweis.className = "klausuren-leer";
+    hinweis.textContent = "Keine weiteren Klausuren";
+    klausurenListe.appendChild(hinweis);
+    return;
+  }
+
+  naechste.forEach((klausur) => {
+    const zeile = document.createElement("li");
+    zeile.className = "klausur-zeile";
+
+    const icon = document.createElement("img");
+    icon.src = "images/Icon kalender 1.png";
+    icon.alt = "";
+    icon.className = "klausur-icon";
+
+    const info = document.createElement("div");
+    info.className = "klausur-info";
+
+    const name = document.createElement("p");
+    name.className = "klausur-name";
+    name.textContent = klausur.fach;
+
+    const datum = document.createElement("p");
+    datum.className = "klausur-datum";
+    datum.textContent = klausur.datum.toLocaleDateString("de-DE", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    });
+
+    info.appendChild(name);
+    info.appendChild(datum);
+
+    const trenner = document.createElement("span");
+    trenner.className = "klausur-trenner";
+    trenner.setAttribute("aria-hidden", "true");
+
+    const tage = document.createElement("div");
+    tage.className = "klausur-tage";
+
+    const tageZahl = document.createElement("span");
+    tageZahl.className = "klausur-tage-zahl";
+    tageZahl.textContent = klausur.tage;
+
+    const tageLabel = document.createElement("span");
+    tageLabel.className = "klausur-tage-label";
+    tageLabel.textContent = "Tage";
+
+    tage.appendChild(tageZahl);
+    tage.appendChild(tageLabel);
+
+    zeile.appendChild(icon);
+    zeile.appendChild(info);
+    zeile.appendChild(trenner);
+    zeile.appendChild(tage);
+
+    klausurenListe.appendChild(zeile);
+  });
+}
+
 // Baut die Deck-Liste sowie den Gesamt-Fortschritt neu auf
 // (z. B. nach dem Öffnen/Verlassen eines Decks oder Änderungen am Fortschritt)
 function renderDashboard() {
   deckListe.innerHTML = "";
 
-  decks.forEach((deck, index) => {
+  // Nur die fünf Fach-Decks, in der Reihenfolge aus Figma - "Hauptstädte"
+  // und eventuelle andere Decks tauchen hier bewusst nicht auf (siehe
+  // AUSGEBLENDETES_DECK).
+  const sichtbareDecks = STARTSEITE_DECK_REIHENFOLGE
+    .map((titel) => decks.find((d) => d.titel === titel))
+    .filter((deck) => deck !== undefined);
+
+  sichtbareDecks.forEach((deck) => {
     const gesamt = deck.karten.length;
-    const gekonnt = deck.karten.filter((k) => k.gekonnt).length;
-    const fehlerkartenAnzahl = deck.karten.filter((k) => k.istFehlerkarte).length;
-    const optik = DECK_OPTIK[index % DECK_OPTIK.length];
 
     const zeile = document.createElement("div");
     zeile.className = "deck-zeile dashboard-zeile";
-    zeile.style.backgroundColor = KATEGORIEN_FARBEN[index % KATEGORIEN_FARBEN.length];
 
-    const icon = document.createElement("div");
-    icon.className = "deck-icon";
-    icon.style.backgroundColor = optik.farbe;
-    icon.textContent = optik.icon;
+    const iconDaten = DECK_ICON_BILDER[deck.titel];
+    const icon = document.createElement("img");
+    icon.className = "deck-icon-bild";
+    icon.src = iconDaten.src;
+    icon.style.width = iconDaten.breite + "px";
+    icon.style.height = iconDaten.hoehe + "px";
+    icon.alt = "";
 
     const info = document.createElement("div");
     info.className = "deck-info";
@@ -268,7 +392,7 @@ function renderDashboard() {
     titel.textContent = deck.titel;
 
     const details = document.createElement("p");
-    details.textContent = `${gesamt} Karte${gesamt === 1 ? "" : "n"} · ${gekonnt}/${gesamt} gekonnt`;
+    details.textContent = `${gesamt} Karte${gesamt === 1 ? "" : "n"}`;
 
     info.appendChild(titel);
     info.appendChild(details);
@@ -281,9 +405,12 @@ function renderDashboard() {
     btnLernen.textContent = "Lernen";
     btnLernen.addEventListener("click", () => oeffneDeck(deck.id, "normal"));
 
+    // Die Anzahl ("Fehlerkarten · 3") zeigen wir hier bewusst nicht mehr an -
+    // das kommt später auf die noch zu bauende "Kategorien"-Seite. Der Button
+    // selbst (und damit der Fehlerkarten-Modus) bleibt voll funktionsfähig.
     const btnFehlerkarten = document.createElement("button");
     btnFehlerkarten.className = "btn-deck-fehlerkarten";
-    btnFehlerkarten.textContent = `Fehlerkarten · ${fehlerkartenAnzahl}`;
+    btnFehlerkarten.textContent = "Fehlerkarten";
     btnFehlerkarten.addEventListener("click", () => oeffneDeck(deck.id, "fehlerkarten"));
 
     aktionen.appendChild(btnLernen);
@@ -345,26 +472,8 @@ function aktualisiereGesamtFortschritt() {
   ring.style.background = `conic-gradient(#0da1a7 ${gekonntGrad}deg, #f99593 ${gekonntGrad}deg ${uebenEnde}deg, #e8e8ed ${uebenEnde}deg)`;
 }
 
-// Auf-/Zuklappen des "Neues Deck erstellen"-Formulars
-btnToggleNeuesDeck.addEventListener("click", () => {
-  deckForm.classList.toggle("hidden");
-});
-
-// Neues Deck anlegen
-deckForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  const titel = inputDeckTitel.value.trim();
-  if (titel === "") return;
-
-  const neuesDeck = { id: Date.now(), titel, statistik: { durchlaeufeAbgeschlossen: 0, verlauf: [] }, karten: [] };
-  decks.push(neuesDeck);
-  speichereDecks();
-  renderDashboard();
-
-  deckForm.reset();
-  deckForm.classList.add("hidden");
-});
+// "Neues Deck erstellen" gibt es auf der Home-Seite vorerst nicht mehr -
+// das kommt erst zurück, sobald es einen Login gibt (siehe CLAUDE.md Phase 3).
 
 // ============================================================
 // ANSICHT 3: STATISTIK
@@ -376,12 +485,14 @@ deckForm.addEventListener("submit", (event) => {
 function renderStatistik() {
   statistikListe.innerHTML = "";
 
-  if (decks.length === 0) {
+  const sichtbareDecks = decks.filter((deck) => deck.titel !== AUSGEBLENDETES_DECK);
+
+  if (sichtbareDecks.length === 0) {
     statistikListe.innerHTML = "<p>Noch keine Decks vorhanden.</p>";
     return;
   }
 
-  decks.forEach((deck, index) => {
+  sichtbareDecks.forEach((deck, index) => {
     const gesamt = deck.karten.length;
     const gekonnt = deck.karten.filter((k) => k.gekonnt).length;
     const erfolgsquote = gesamt === 0 ? 0 : Math.round((gekonnt / gesamt) * 100);
@@ -436,6 +547,18 @@ function renderStatistik() {
 // Gibt alle aktuellen Fehlerkarten eines Decks zurück
 function fehlerkartenDesDecks(deck) {
   return deck.karten.filter((k) => k.istFehlerkarte);
+}
+
+// Mischt ein Array zufällig (Fisher-Yates-Shuffle) und gibt eine NEUE Liste
+// zurück - das Original-Array (z. B. deck.karten) bleibt unverändert, nur
+// die Reihenfolge des jeweiligen Lern-Durchlaufs wird zufällig bestimmt.
+function gemischt(liste) {
+  const kopie = [...liste];
+  for (let i = kopie.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [kopie[i], kopie[j]] = [kopie[j], kopie[i]];
+  }
+  return kopie;
 }
 
 // Hintergrundfarben der fünf Kategorie-Buttons, in der vorgegebenen Reihenfolge
@@ -499,11 +622,11 @@ function oeffneDeck(deckId, modus) {
   deckTitelAnzeige.textContent = deck.titel;
 
   if (modus === "fehlerkarten") {
-    queue = fehlerkartenDesDecks(deck);
+    queue = gemischt(fehlerkartenDesDecks(deck));
     sessionFehlerkartenGesamt = queue.length;
     modusHinweis.classList.remove("hidden");
   } else {
-    queue = deck.karten.filter((k) => !k.gekonnt);
+    queue = gemischt(deck.karten.filter((k) => !k.gekonnt));
     modusHinweis.classList.add("hidden");
   }
 
@@ -719,7 +842,7 @@ btnNeustart.addEventListener("click", () => {
   const deck = aktuellesDeck();
   deck.karten.forEach((k) => (k.gekonnt = false));
   speichereDecks();
-  queue = [...deck.karten];
+  queue = gemischt(deck.karten);
 
   sessionRichtigKlicks = 0;
   sessionFalschKlicks = 0;
@@ -731,3 +854,4 @@ btnNeustart.addEventListener("click", () => {
 
 // ---- Start: Dashboard anzeigen ----
 renderDashboard();
+renderKlausuren();
