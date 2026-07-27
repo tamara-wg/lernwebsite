@@ -5,23 +5,49 @@
 const SPEICHER_SCHLUESSEL = "karteikarten-decks";
 const ALTER_SPEICHER_SCHLUESSEL = "karteikarten-deck"; // aus der Vorgänger-Version (nur ein Deck)
 
-// Vorgegebenes Start-Deck, falls noch gar nichts gespeichert ist.
-// Wird später durch dein eigenes Fragen/Antworten-Deck ersetzt bzw. ergänzt.
+// Vorgegebene Karten für das VWL-Deck, Unterthema "Wissenschaft".
+// Eigene Funktion (statt fest im Deck verdrahtet), damit sie sowohl beim
+// allerersten Aufruf als auch bei der Migration bestehender Local-Storage-
+// Daten (siehe ergaenzeVwlStandardkarten) verwendet werden kann.
+function erzeugeVwlWissenschaftKarten() {
+  return [
+    { id: 1, unterthema: "Wissenschaft", frage: "Was versteht man unter Wissenschaft?", antwort: "Die systematische und damit nicht planlose bzw. willkürliche Erforschung eines bestimmten, abgegrenzten Stoff- bzw. Wissensgebietes mithilfe geeigneter Forschungsmethoden.", gekonnt: false, falschAnzahl: 0, richtigAnzahl: 0, istFehlerkarte: false, zuletztGelernt: null },
+    { id: 2, unterthema: "Wissenschaft", frage: "Was bezeichnet das Erkenntnisobjekt einer Wissenschaft?", antwort: "Das bestimmte, abgegrenzte Stoff- bzw. Wissensgebiet, das untersucht wird.", gekonnt: false, falschAnzahl: 0, richtigAnzahl: 0, istFehlerkarte: false, zuletztGelernt: null },
+    { id: 3, unterthema: "Wissenschaft", frage: "Was sind wesentliche Kennzeichen einer Wissenschaft?", antwort: "Ein abgegrenztes Erkenntnisobjekt, eigene Forschungsmethoden und eine spezifische Terminologie.", gekonnt: false, falschAnzahl: 0, richtigAnzahl: 0, istFehlerkarte: false, zuletztGelernt: null },
+    { id: 4, unterthema: "Wissenschaft", frage: "In welche zwei großen Bereiche lassen sich Wissenschaften einteilen?", antwort: "In Formalwissenschaften und Realwissenschaften.", gekonnt: false, falschAnzahl: 0, richtigAnzahl: 0, istFehlerkarte: false, zuletztGelernt: null },
+    { id: 5, unterthema: "Wissenschaft", frage: "Was sind Formalwissenschaften + Beispiele?", antwort: "Wissenschaften, die konsistente, in sich widerspruchsfreie Systeme von Aussagen und Verfahrensregeln behandeln, z. B. Logik und Mathematik.", gekonnt: false, falschAnzahl: 0, richtigAnzahl: 0, istFehlerkarte: false, zuletztGelernt: null },
+    { id: 6, unterthema: "Wissenschaft", frage: "Was sind Realwissenschaften + Beispiele?", antwort: "Wissenschaften, die sich mit Aussagen über die Realität befassen, z. B. Psychologie und Physik.", gekonnt: false, falschAnzahl: 0, richtigAnzahl: 0, istFehlerkarte: false, zuletztGelernt: null },
+    { id: 7, unterthema: "Wissenschaft", frage: "Womit beschäftigen sich Natur- und Geisteswissenschaften + Beispiele?", antwort: "Natur: Erscheinungen bzw. Erklärungen außerhalb des Menschen, z. B. Physik, Chemie, Geologie; Geistes: Mit Phänomenen des menschlichen Geistes, z. B. Philosophie, Sprachwissenschaft.", gekonnt: false, falschAnzahl: 0, richtigAnzahl: 0, istFehlerkarte: false, zuletztGelernt: null },
+    { id: 8, unterthema: "Wissenschaft", frage: "Zu welcher Wissenschaftsart gehören die Wirtschaftswissenschaften + Erkenntnisobjekt?", antwort: "Realwissenschaften, und dort zu den Sozialwissenschaften. Erkenntnisobjekt: Sämtliche Erscheinungen des Wirtschaftslebens.", gekonnt: false, falschAnzahl: 0, richtigAnzahl: 0, istFehlerkarte: false, zuletztGelernt: null }
+  ];
+}
+
+// Vorgegebene Start-Decks, falls noch gar nichts gespeichert ist.
 function erzeugeStandardDecks() {
   return [
     {
       id: 1,
-      titel: "Hauptstädte",
+      titel: "VWL",
       statistik: { durchlaeufeAbgeschlossen: 0, verlauf: [] },
-      karten: [
-        { id: 1, frage: "Was ist die Hauptstadt von Frankreich?", antwort: "Paris", gekonnt: false, falschAnzahl: 0, richtigAnzahl: 0, istFehlerkarte: false, zuletztGelernt: null },
-        { id: 2, frage: "Was ist die Hauptstadt von Italien?", antwort: "Rom", gekonnt: false, falschAnzahl: 0, richtigAnzahl: 0, istFehlerkarte: false, zuletztGelernt: null },
-        { id: 3, frage: "Was ist die Hauptstadt von Spanien?", antwort: "Madrid", gekonnt: false, falschAnzahl: 0, richtigAnzahl: 0, istFehlerkarte: false, zuletztGelernt: null },
-        { id: 4, frage: "Was ist die Hauptstadt von Portugal?", antwort: "Lissabon", gekonnt: false, falschAnzahl: 0, richtigAnzahl: 0, istFehlerkarte: false, zuletztGelernt: null },
-        { id: 5, frage: "Was ist die Hauptstadt von Griechenland?", antwort: "Athen", gekonnt: false, falschAnzahl: 0, richtigAnzahl: 0, istFehlerkarte: false, zuletztGelernt: null }
-      ]
+      karten: erzeugeVwlWissenschaftKarten()
     }
   ];
+}
+
+// Entfernt das alte Test-Deck "Hauptstädte" auch aus bereits gespeicherten
+// Daten (falls es aus einer früheren Version noch im Local Storage steckt).
+function entferneHauptstaedteDeck(decks) {
+  return decks.filter((deck) => deck.titel !== "Hauptstädte");
+}
+
+// Trägt die vorgegebenen VWL-Karten nach, falls das VWL-Deck aus einer
+// früheren Version bereits existiert, aber noch keine Karten hat.
+function ergaenzeVwlStandardkarten(decks) {
+  const vwlDeck = decks.find((d) => d.titel === "VWL");
+  if (vwlDeck && vwlDeck.karten.length === 0) {
+    vwlDeck.karten = erzeugeVwlWissenschaftKarten();
+  }
+  return decks;
 }
 
 // Stellt sicher, dass jede Karte alle Lernfelder besitzt, auch wenn sie
@@ -35,6 +61,7 @@ function ergaenzeLernfelder(decks) {
       if (typeof karte.richtigAnzahl !== "number") karte.richtigAnzahl = 0;
       if (typeof karte.istFehlerkarte !== "boolean") karte.istFehlerkarte = karte.falschAnzahl >= 1;
       if (typeof karte.zuletztGelernt === "undefined") karte.zuletztGelernt = null;
+      if (typeof karte.unterthema === "undefined") karte.unterthema = null;
     });
   });
   return decks;
@@ -78,7 +105,8 @@ function ergaenzeStandardKategorien(decks) {
 function ladeDecks() {
   const gespeichert = localStorage.getItem(SPEICHER_SCHLUESSEL);
   if (gespeichert) {
-    return ergaenzeStandardKategorien(ergaenzeDeckStatistik(ergaenzeLernfelder(JSON.parse(gespeichert))));
+    const decks = entferneHauptstaedteDeck(JSON.parse(gespeichert));
+    return ergaenzeStandardKategorien(ergaenzeVwlStandardkarten(ergaenzeDeckStatistik(ergaenzeLernfelder(decks))));
   }
 
   const altesDeck = localStorage.getItem(ALTER_SPEICHER_SCHLUESSEL);
@@ -244,11 +272,6 @@ const DECK_OPTIK = [
   { icon: "📓", farbe: "#fde3ea" }
 ];
 
-// "Hauptstädte" war das Test-Deck aus Phase 1. Es bleibt im Datenmodell
-// erhalten (falls später nochmal gebraucht), wird aber vorerst nirgends mehr
-// angezeigt - neue Decks gibt es laut Vorgabe erst nach einem Login (Phase 3).
-const AUSGEBLENDETES_DECK = "Hauptstädte";
-
 // Reihenfolge + Icon-Bilder der Deck-Zeilen auf der Home-Seite, 1:1 aus Figma.
 // Jedes Icon hat dort ein eigenes Seitenverhältnis (Breite/Höhe kommen direkt
 // aus den Figma-Maßen), deshalb hier pro Deck statt einheitlich hinterlegt.
@@ -364,9 +387,8 @@ function renderKlausuren() {
 function renderDashboard() {
   deckListe.innerHTML = "";
 
-  // Nur die fünf Fach-Decks, in der Reihenfolge aus Figma - "Hauptstädte"
-  // und eventuelle andere Decks tauchen hier bewusst nicht auf (siehe
-  // AUSGEBLENDETES_DECK).
+  // Nur die fünf Fach-Decks, in der Reihenfolge aus Figma - eventuelle
+  // andere Decks tauchen hier bewusst nicht auf.
   const sichtbareDecks = STARTSEITE_DECK_REIHENFOLGE
     .map((titel) => decks.find((d) => d.titel === titel))
     .filter((deck) => deck !== undefined);
@@ -485,7 +507,7 @@ function aktualisiereGesamtFortschritt() {
 function renderStatistik() {
   statistikListe.innerHTML = "";
 
-  const sichtbareDecks = decks.filter((deck) => deck.titel !== AUSGEBLENDETES_DECK);
+  const sichtbareDecks = decks;
 
   if (sichtbareDecks.length === 0) {
     statistikListe.innerHTML = "<p>Noch keine Decks vorhanden.</p>";
@@ -610,27 +632,37 @@ function renderThemenListe() {
 // modus ist entweder "normal" (alle noch nicht gekonnten Karten) oder
 // "fehlerkarten" (nur die aktuellen Fehlerkarten dieses Decks).
 function oeffneDeck(deckId, modus) {
+  // Ist genau diese Session (selbes Deck, selber Modus) schon offen UND noch
+  // nicht fertig (Warteschlange nicht leer), wird sie fortgesetzt statt neu
+  // gestartet - sonst würde z. B. ein Abstecher zum Dashboard und zurück den
+  // Session-Fortschritts-Ring auf 0 zurücksetzen, obwohl man mitten in
+  // derselben Lern-Session ist. Ist die Session bereits fertig, soll ein
+  // erneuter Klick dagegen ganz normal neu aufbauen (z. B. damit ein frisch
+  // gestarteter Fehlerkarten-Durchlauf auch neu markierte Fehlerkarten zeigt).
+  const istGleicheSession = deckId === aktuellesDeckId && modus === aktuellerLernModus && queue.length > 0;
+
   aktuellesDeckId = deckId;
   aktuellerLernModus = modus;
   const deck = aktuellesDeck();
 
-  sessionRichtigKlicks = 0;
-  sessionFalschKlicks = 0;
-  sessionGekonntIds = new Set();
-  sessionFalschIds = new Set();
-
   deckTitelAnzeige.textContent = deck.titel;
+  modusHinweis.classList.toggle("hidden", modus !== "fehlerkarten");
 
-  if (modus === "fehlerkarten") {
-    queue = gemischt(fehlerkartenDesDecks(deck));
-    sessionFehlerkartenGesamt = queue.length;
-    modusHinweis.classList.remove("hidden");
-  } else {
-    queue = gemischt(deck.karten.filter((k) => !k.gekonnt));
-    modusHinweis.classList.add("hidden");
+  if (!istGleicheSession) {
+    sessionRichtigKlicks = 0;
+    sessionFalschKlicks = 0;
+    sessionGekonntIds = new Set();
+    sessionFalschIds = new Set();
+
+    if (modus === "fehlerkarten") {
+      queue = gemischt(fehlerkartenDesDecks(deck));
+      sessionFehlerkartenGesamt = queue.length;
+    } else {
+      queue = gemischt(deck.karten.filter((k) => !k.gekonnt));
+    }
+
+    sessionGesamt = queue.length;
   }
-
-  sessionGesamt = queue.length;
 
   renderThemenListe();
   starteAnzeige();
@@ -667,7 +699,7 @@ function zeigeZustand(zustand) {
 // Fehlerkarten-Decks) die passende Erfolgsmeldung + Statistik zu diesem Durchlauf.
 function anzeigeFertigStatistik() {
   if (aktuellerLernModus === "fehlerkarten") {
-    fertigTitel.textContent = "🎉 Keine Fehlerkarten mehr! Du hast aktuell alle schwierigen Karten gemeistert.";
+    fertigTitel.textContent = "🎉 Geschafft! Du hast alle Karten dieser Session gelernt.";
     btnNeustart.classList.add("hidden"); // "Nochmal von vorne" ergibt hier keinen Sinn
   } else {
     fertigTitel.textContent = "🎉 Geschafft! Du kannst alle Karten dieses Decks.";
@@ -691,6 +723,16 @@ function zeigeAktuelleKarte() {
   const aktuelleKarte = queue[0];
   fragetext.textContent = aktuelleKarte.frage;
   antwortText.textContent = aktuelleKarte.antwort;
+
+  // Statt eines festen Hinweistextes zeigen wir hier das Unterthema der
+  // Karte an (z. B. "Wissenschaft"). Hat eine Karte kein Unterthema,
+  // blenden wir die Zeile aus.
+  if (aktuelleKarte.unterthema) {
+    hinweis.textContent = aktuelleKarte.unterthema;
+    hinweis.classList.remove("hidden");
+  } else {
+    hinweis.classList.add("hidden");
+  }
 }
 
 // Aktualisiert den Fortschritts-Ring DIESER Session rechts im Lernmodus
@@ -753,8 +795,8 @@ function starteAnzeige() {
   } else if (queue.length === 0) {
     zeigeZustand("fertig");
   } else {
-    zeigeAktuelleKarte();
     zeigeZustand("lernen");
+    zeigeAktuelleKarte();
   }
   aktualisiereFortschritt();
 }
@@ -791,8 +833,8 @@ function wennFertigOderNaechsteKarte() {
     }
     zeigeZustand("fertig");
   } else {
-    zeigeAktuelleKarte();
     zeigeZustand("lernen");
+    zeigeAktuelleKarte();
   }
   aktualisiereFortschritt();
 }
@@ -807,11 +849,15 @@ card.addEventListener("click", () => {
 // im normalen Modus bleibt eine bestehende Fehlerkarten-Markierung bestehen.
 btnGewusst.addEventListener("click", () => {
   const karte = queue.shift();
+  // War die Karte in diesem Durchlauf schon mal "nicht gewusst", gilt sie
+  // trotz der jetzt richtigen Antwort noch nicht als gemeistert - sie bleibt
+  // Fehlerkarte und taucht im nächsten Fehlerkarten-Durchlauf wieder auf.
+  const warInDieserSessionSchonFalsch = sessionFalschIds.has(karte.id);
   karte.gekonnt = true;
   karte.richtigAnzahl = (karte.richtigAnzahl || 0) + 1;
   karte.zuletztGelernt = new Date().toISOString();
 
-  if (aktuellerLernModus === "fehlerkarten") {
+  if (aktuellerLernModus === "fehlerkarten" && !warInDieserSessionSchonFalsch) {
     karte.istFehlerkarte = false;
   }
 

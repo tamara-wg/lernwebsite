@@ -1097,15 +1097,23 @@ h1, h2, h3 {
 
 
 .text {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 22px;
   font-weight: 700;
   color: rgb(8, 12, 30);
+  text-align: center;
   position: relative;
   z-index: 1;
 }
 
+/* Antworttext bewusst nicht fett, im Unterschied zur Frage */
+#antwort-text {
+  font-weight: 400;
+}
+
 .hint {
-  margin-top: 15px;
+  max-width: 640px;
+  margin: 15px 0 0 0;
   color: var(--farbe-text-hell);
   font-size: 14px;
   text-align: center;
