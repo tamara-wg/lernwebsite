@@ -737,6 +737,8 @@ h1, h2, h3 {
   flex-direction: column;
   gap: 10px;
   font-size: 13px;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #5C6889;
 }
 
 .fortschritt-legende li {
@@ -869,6 +871,347 @@ h1, h2, h3 {
 }
 
 /* ==========================================================
+   DECK-AUSWAHL (Zwischenseite vor dem Lernmodus, Figma-Frame "Desktop - 3")
+   Zeigt alle Fächer nochmal als eigene Karten mit 3 Buttons zur Auswahl,
+   WIE gelernt werden soll (Themen/Zufall/Gesamt) - siehe script.js.
+   ========================================================== */
+.deckauswahl-layout {
+  max-width: 1346px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.deckauswahl-titel {
+  font-size: 16px;
+  font-weight: 700;
+  color: #000000;
+  margin: 0 0 20px 0;
+}
+
+.deckauswahl-karten {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.fach-karte {
+  flex: 1 1 258px;
+  max-width: 258px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  border: 2px solid #ffffff;
+  border-radius: 20px;
+  padding: 0 20px 34px 20px;
+}
+
+.fach-icon-bild {
+  margin-top: 70px;
+  margin-bottom: 30px;
+  display: block;
+}
+
+.fach-name {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 700;
+  color: #000000;
+  text-align: center;
+}
+
+.fach-anzahl {
+  margin: 6px 0 0 0;
+  font-size: 16px;
+  color: #5c6889;
+}
+
+.fach-aktionen {
+  margin-top: 37px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 13px;
+}
+
+.btn-fach-aktion {
+  width: 100%;
+  max-width: 155px;
+  height: 42px;
+  box-sizing: border-box;
+  background-color: #fefefe;
+  border: 1px solid #f3f5f9;
+  border-radius: 15px;
+  font-family: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.btn-fach-aktion:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+/* Statistik-Feld: Kreisdiagramm "Gelernt"/"Offen" für das ganze Deck */
+.fach-statistik-platzhalter {
+  margin-top: 30px;
+  width: 100%;
+  max-width: 218px;
+  min-height: 178px;
+  box-sizing: border-box;
+  background-color: #fefefe;
+  border: 1px solid #f3f5f9;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fach-fortschritt-ring {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Weißer Innenkreis - Farbe passend zum Hintergrund des Statistik-Felds,
+   damit der Ring nahtlos darauf "schwebt" (gleicher Trick wie bei den
+   anderen Fortschritts-Ringen der App). */
+.fach-fortschritt-ring::before {
+  content: "";
+  position: absolute;
+  /* Kleinerer Inset (vorher 15px) = größerer weißer Innenkreis = schmalerer
+     farbiger Rand, bei gleichbleibendem Außendurchmesser des Rings (110px). */
+  inset: 9px;
+  background-color: #fefefe;
+  border-radius: 50%;
+}
+
+.fach-fortschritt-prozent {
+  position: relative;
+  z-index: 1;
+  font-size: 20px;
+  font-weight: 700;
+  color: #5c6889;
+}
+
+/* ==========================================================
+   THEMENAUSWAHL-POP-UP (Figma-Frame "Themenauswahl")
+   Öffnet sich über der Deck-Auswahl-Seite, wenn man bei einem Fach auf
+   "Themen" klickt. Hintergrund abgedunkelt + verschwommen (backdrop-filter),
+   damit klar erkennbar ist, dass die restliche Seite gerade inaktiv ist.
+   ========================================================== */
+.themenauswahl-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Höhere Regel-Reihenfolge als ".hidden" oben im Dokument würde sonst deren
+   "display: none" durch das "display: flex" hier oben überschreiben (gleiche
+   Spezifität, es zählt die Reihenfolge im Stylesheet). */
+.themenauswahl-overlay.hidden {
+  display: none;
+}
+
+.themenauswahl-panel {
+  position: relative;
+  width: 100%;
+  max-width: 848px;
+  max-height: 85vh;
+  box-sizing: border-box;
+  background-color: #fdfdfd;
+  border-radius: 20px;
+  box-shadow: var(--schatten-fein);
+  padding: 31px 34px 34px 34px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* Ohne das hier erbt der Inhalt "text-align: center" vom body - fiel erst
+     auf, seit .thema-balken-info per "flex: 1" breiter ist als sein Text
+     (Thema-Namen rutschten dadurch sichtbar nach rechts/mittig). */
+  text-align: left;
+}
+
+/* Dekorative Schwung-Formen in den Ecken, 1:1 aus Figma - liegen hinter dem
+   eigentlichen Inhalt (z-index) und blockieren keine Klicks. */
+.themenauswahl-panel::before,
+.themenauswahl-panel::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-size: contain;
+  z-index: 0;
+}
+
+.themenauswahl-panel::before {
+  top: 0;
+  right: 0;
+  width: 138px;
+  height: 181px;
+  background-image: url("images/themenauswahl-deko-oben.svg");
+  background-position: top right;
+}
+
+.themenauswahl-panel::after {
+  bottom: 0;
+  left: 0;
+  width: 242px;
+  height: 148px;
+  background-image: url("images/themenauswahl-deko-unten.svg");
+  background-position: bottom left;
+}
+
+.themenauswahl-schliessen {
+  position: relative;
+  z-index: 1;
+  align-self: flex-end;
+  width: 32px;
+  height: 32px;
+  margin: -7px -10px 0 0;
+  border: none;
+  border-radius: 50%;
+  background-color: #f3f5f9;
+  color: var(--farbe-text-hell);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.themenauswahl-schliessen:hover {
+  opacity: 0.85;
+}
+
+.themenauswahl-titel {
+  position: relative;
+  z-index: 1;
+  margin: 8px 0 16px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #000000;
+}
+
+.themenauswahl-liste {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+  padding-right: 14px;
+  /* Genau 5 Balken passen sichtbar hinein (wie in Figma) - alles darüber
+     hinaus wird per Scrollbalken/Mausrad erreichbar, statt das Pop-up
+     unbegrenzt wachsen zu lassen. */
+  max-height: calc(5 * 64px + 4 * 18px);
+  scrollbar-width: thin;
+  scrollbar-color: #d9d9d9 transparent;
+}
+
+.themenauswahl-liste::-webkit-scrollbar {
+  width: 10px;
+}
+
+.themenauswahl-liste::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.themenauswahl-liste::-webkit-scrollbar-thumb {
+  background-color: #d9d9d9;
+  border-radius: 999px;
+}
+
+.thema-balken {
+  flex-shrink: 0;
+  min-height: 64px;
+  box-sizing: border-box;
+  background-color: #fefefe;
+  border: 1px solid #f3f5f9;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  /* Linker Innenabstand exakt aus Figma (Thema-Text sitzt dort 36px vom
+     Balkenrand entfernt, nicht 24px). */
+  padding: 0 20px 0 36px;
+}
+
+.thema-balken-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.thema-balken-info h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #000000;
+}
+
+.thema-balken-info p {
+  margin: 2px 0 0 0;
+  font-size: 12px;
+  color: #5c6889;
+}
+
+/* Ganz dünne Fortschrittsanzeige je Thema (wie viel Prozent zuletzt beim
+   ersten Versuch gewusst wurde) - gleiche Farben wie der Fortschrittsbalken
+   im Lernmodus, nur deutlich schmaler. */
+.thema-balken-fortschritt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.thema-balken-leiste {
+  width: 70px;
+  height: 5px;
+  border-radius: 999px;
+  background-color: #e4e9e8;
+  overflow: hidden;
+}
+
+.thema-balken-leiste-fill {
+  height: 100%;
+  background-color: var(--farbe-primaer);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.thema-balken-prozent {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--farbe-text-hell);
+  min-width: 30px;
+  text-align: right;
+}
+
+.themenauswahl-leer {
+  position: relative;
+  z-index: 1;
+  color: var(--farbe-text-hell);
+  font-size: 14px;
+  margin: 0;
+  padding: 10px 0 4px 0;
+}
+
+/* ==========================================================
    LERNMODUS
    ========================================================== */
 
@@ -928,10 +1271,43 @@ h1, h2, h3 {
   margin: 4px 0 18px 0;
 }
 
+/* Gleiche Breitenbegrenzung wie Karte/Fortschrittsleiste/Buttons - sonst
+   zentriert sich die Button-Reihe über die volle (breitere) Spalte statt
+   nur über die 640px-breite Karte, wodurch sie optisch nach rechts verrutscht. */
+#fertig-nachricht {
+  max-width: 640px;
+}
+
 /* Fortschrittsanzeige oberhalb der Karte */
 .progress-info {
   max-width: 640px;
   margin: 0 0 22px 0;
+  position: relative;
+}
+
+/* "X"-Button oben rechts über der Fortschrittsanzeige (Lern Session +
+   Prozentzahl) - führt mit derselben Logik wie der "Zurück"-Button nach
+   Durchlauf-Ende zurück (Deck-Auswahl-Seite bzw. bei Fehlerkarten zur Home-Seite). */
+.btn-lernmodus-verlassen {
+  position: absolute;
+  top: -8px;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  box-sizing: border-box;
+  border: none;
+  border-radius: 50%;
+  background-color: #f3f5f9;
+  color: var(--farbe-text-hell);
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-lernmodus-verlassen:hover {
+  opacity: 0.85;
 }
 
 .progress-label {
@@ -1104,6 +1480,10 @@ h1, h2, h3 {
   text-align: center;
   position: relative;
   z-index: 1;
+  /* Manche Antworten (z. B. Kosten-Deck) enthalten echte Zeilenumbrüche für
+     mehrteilige Aufzählungen (z. B. "E: ..." / "I: ..." untereinander) -
+     ohne "pre-line" würden Browser diese sonst einfach ignorieren. */
+  white-space: pre-line;
 }
 
 /* Antworttext bewusst nicht fett, im Unterschied zur Frage */
@@ -1274,10 +1654,24 @@ h1, h2, h3 {
   margin-top: 20px;
 }
 
+/* "Nochmal" + "Zurück" nebeneinander, nach dem Durchlauf-Ende */
+.fertig-aktionen {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 15px;
+}
+
 .btn-restart {
   background-color: var(--farbe-primaer-hell);
   color: var(--farbe-primaer-dunkel);
-  margin-top: 15px;
+  margin-top: 0;
+}
+
+.btn-zurueck {
+  background-color: #eef0f4;
+  color: var(--farbe-text);
+  margin-top: 0;
 }
 
 #keine-karten-nachricht {
@@ -1373,6 +1767,175 @@ h1, h2, h3 {
   margin: 4px 0 0 0;
   font-size: 12px;
   color: var(--farbe-text-hell);
+}
+
+/* ==========================================================
+   KALENDER (Fortschritt-Seite, unterhalb der Statistik)
+   Bewusst vorerst nur hier auf der Statistik-Seite - dient dazu, die
+   Klausurtermine (gleiche Daten wie "Nächste Klausuren" auf der
+   Home-Seite) auch als Monatsüberblick zu sehen.
+   ========================================================== */
+
+.kalender-abschnitt-titel {
+  margin-top: 32px;
+}
+
+.kalender-karte {
+  background: var(--farbe-karte);
+  border-radius: var(--radius-gross);
+  box-shadow: var(--schatten);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 480px;
+}
+
+.kalender-kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kalender-monat {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.kalender-nav {
+  display: flex;
+  gap: 6px;
+}
+
+.kalender-nav button {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-klein);
+  border: 1px solid #e6eaf1;
+  background: var(--farbe-hintergrund);
+  color: var(--farbe-text);
+  font-size: 15px;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+
+.kalender-nav button:hover {
+  background: var(--farbe-primaer-hell);
+  border-color: var(--farbe-primaer);
+  color: var(--farbe-primaer-dunkel);
+}
+
+.kalender-nav button:focus-visible {
+  outline: 2px solid var(--farbe-primaer);
+  outline-offset: 2px;
+}
+
+.kalender-wochentage {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.kalender-wochentage span {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--farbe-text-hell);
+  text-align: center;
+}
+
+.kalender-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(40px, auto);
+  gap: 4px;
+}
+
+.kalender-tag {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: var(--radius-klein);
+  font-variant-numeric: tabular-nums;
+}
+
+.kalender-tag-zahl {
+  font-size: 13px;
+}
+
+.kalender-tag.andere-monat .kalender-tag-zahl {
+  color: #c3cad3;
+}
+
+.kalender-tag.heute .kalender-tag-zahl {
+  color: #fff;
+  background: var(--farbe-primaer);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kalender-tag.klausur .kalender-tag-zahl {
+  font-weight: 700;
+  color: var(--farbe-rot);
+}
+
+.kalender-tag.klausur.heute .kalender-tag-zahl {
+  color: #fff;
+  background: var(--farbe-rot);
+}
+
+.kalender-tag-punkt {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--farbe-rot);
+}
+
+.kalender-tag:not(.klausur) .kalender-tag-punkt {
+  visibility: hidden;
+}
+
+.kalender-legende {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--farbe-text-hell);
+  padding-top: 4px;
+  border-top: 1px solid #e6eaf1;
+}
+
+.kalender-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.kalender-liste-eintrag {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.kalender-liste-eintrag .kalender-liste-datum {
+  width: 30px;
+  flex-shrink: 0;
+  font-weight: 700;
+  color: var(--farbe-rot);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ==========================================================

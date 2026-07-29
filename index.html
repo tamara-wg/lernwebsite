@@ -101,6 +101,21 @@
     </div>
   </div>
 
+  <!-- ================= ANSICHT: DECK-AUSWAHL (Zwischenseite vor dem Lernmodus) ================= -->
+  <!-- Erreichbar über den "Lernen"-Button pro Deck-Zeile auf der Home-Seite. Hier wählt man
+       aus, WIE man ein Deck lernen möchte (Themen/Zufall/Gesamt), bevor der eigentliche
+       Lernmodus (view-lernmodus) startet. Der "Lernen"-Nav-Punkt oben in der Kopfleiste bleibt
+       davon unberührt - der führt weiterhin direkt zur zuletzt offenen Lern-Session (siehe
+       navLernen in script.js). -->
+  <div id="view-deckauswahl" class="hidden">
+    <div class="deckauswahl-layout">
+      <h2 class="deckauswahl-titel">Deine Fächer</h2>
+      <div class="deckauswahl-karten" id="deckauswahl-karten">
+        <!-- Fach-Karten werden hier per JavaScript eingefügt -->
+      </div>
+    </div>
+  </div>
+
   <!-- ================= ANSICHT 2: LERNMODUS (für ein ausgewähltes Deck) ================= -->
   <!-- Erstmal versteckt, wird erst sichtbar, wenn man auf ein Deck klickt.
        Reine Lernseite: Karten verwalten/Deck löschen gibt es hier bewusst
@@ -117,6 +132,7 @@
 
         <!-- Fortschrittsanzeige -->
         <div class="progress-info">
+          <button type="button" id="btn-lernmodus-verlassen" class="btn-lernmodus-verlassen" aria-label="Zurück">✕</button>
           <p class="progress-label">Lern Session</p>
           <div class="progress-kopf">
             <p id="progress-text">Karte 1 von 5</p>
@@ -163,7 +179,10 @@
         <div id="fertig-nachricht" class="hidden">
           <h2 id="fertig-titel">🎉 Geschafft! Du kannst alle Karten dieses Decks.</h2>
           <p id="fertig-statistik"></p>
-          <button id="btn-neustart" class="btn btn-restart">↻ Nochmal von vorne</button>
+          <div class="fertig-aktionen">
+            <button id="btn-neustart" class="btn btn-restart">↻ Nochmal</button>
+            <button id="btn-fertig-zurueck" class="btn btn-zurueck">← Zurück</button>
+          </div>
         </div>
 
         <div id="keine-karten-nachricht" class="hidden">
@@ -222,8 +241,53 @@
       <div class="deck-liste" id="statistik-liste">
         <!-- Statistik-Zeilen werden hier per JavaScript eingefügt -->
       </div>
+
+      <h2 class="kalender-abschnitt-titel">📅 Kalender</h2>
+      <p class="bereich-titel">Klausurtermine im Monatsüberblick</p>
+
+      <div class="kalender-karte">
+        <div class="kalender-kopf">
+          <span class="kalender-monat" id="kalender-monat-label"></span>
+          <div class="kalender-nav">
+            <button type="button" id="btn-kalender-zurueck" aria-label="Vorheriger Monat">‹</button>
+            <button type="button" id="btn-kalender-vor" aria-label="Nächster Monat">›</button>
+          </div>
+        </div>
+
+        <div class="kalender-wochentage">
+          <span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span>
+        </div>
+
+        <div class="kalender-grid" id="kalender-grid">
+          <!-- Tage des Monats werden hier per JavaScript eingefügt -->
+        </div>
+
+        <div class="kalender-legende">
+          <span class="punkt punkt-rot"></span>
+          <span>Klausurtermin</span>
+        </div>
+
+        <div class="kalender-liste" id="kalender-liste">
+          <!-- Klausurtermine des angezeigten Monats werden hier per JavaScript eingefügt -->
+        </div>
+      </div>
     </div>
 
+  </div>
+
+  <!-- ================= THEMENAUSWAHL-POP-UP ================= -->
+  <!-- Öffnet sich über dem "Themen"-Button einer Fach-Karte auf der
+       Deck-Auswahl-Seite (view-deckauswahl). Liegt als eigenes, fest
+       positioniertes Overlay außerhalb der Ansichten, da es über JEDER
+       Ansicht erscheinen können muss, in der es geöffnet wurde. -->
+  <div id="themenauswahl-overlay" class="themenauswahl-overlay hidden">
+    <div class="themenauswahl-panel">
+      <button type="button" id="btn-themenauswahl-schliessen" class="themenauswahl-schliessen" aria-label="Schließen">✕</button>
+      <h3 class="themenauswahl-titel">Themenauswahl</h3>
+      <div class="themenauswahl-liste" id="themenauswahl-liste">
+        <!-- Themen-Balken werden hier per JavaScript eingefügt -->
+      </div>
+    </div>
   </div>
 
   <script src="script.js"></script>
